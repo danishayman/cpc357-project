@@ -1,0 +1,397 @@
+/*
+ * PROJECT: Smart Stray Animal Feeder + Water Dispenser
+ * BOARD: Cytron Maker Feather AIoT S3 (ESP32-S3)
+ * 
+ * HARDWARE MAPPING:
+ * - PIR Sensor (Food):     Digital Input = D9
+ * - PIR Sensor (Water):    Digital Input = D10
+ * - Food Servo:            PWM Signal = D14
+ * - Water Servo:           PWM Signal = D15
+ * - MH-RD Rain Sensor:     Analog Input = A3 (GPIO1)
+ * - Float Water Level:     Digital Input = D16
+ * - HX711 Scale (Food):    DT=D17, SCK=D18
+ * - Power Control:         D11 (Must be HIGH to enable 3V3 peripherals)
+ */
+
+#include <Wire.h>
+#include "HX711.h"
+#include <ESP32Servo.h>
+
+// --- PIN DEFINITIONS ---
+#define PIN_PIR_FOOD        14   // PIR motion sensor for food area
+#define PIN_PIR_WATER       21  // PIR motion sensor for water area
+#define PIN_SERVO_FOOD      38  // Servo for food dispenser
+#define PIN_SERVO_WATER     39  // Servo for water dispenser
+#define PIN_RAIN_ANALOG     5   // MH-RD rain sensor analog (A3)
+#define PIN_WATER_LEVEL     18  // Float switch (LOW=full, HIGH=empty)
+#define PIN_SCALE_DT        16  // HX711 data pin
+#define PIN_SCALE_SCK       15  // HX711 clock pin
+#define PIN_BUTTON_FOOD     13  // Manual food dispense button
+#define PIN_BUTTON_WATER    6  // Manual water dispense button
+#define PIN_PWR_CTRL        11  // Maker Feather 3V3 Regulator Control
+
+// --- CONFIGURATION CONSTANTS ---
+// Servo Angles
+const int SERVO_OPEN_ANGLE = 90;       // Angle to release food/water
+const int SERVO_CLOSE_ANGLE = 0;       // Angle to stop dispensing
+
+// Timing
+const int FOOD_DISPENSE_TIME_MS = 800;    // How long food gate stays open
+const int WATER_DISPENSE_TIME_MS = 1500;  // How long water valve stays open
+const unsigned long PIR_COOLDOWN_MS = 5000; // 5 second cooldown between triggers
+const unsigned long SETTLE_TIME_MS = 2000;  // Time to wait after servo movement
+
+// Weight Thresholds
+const float MIN_FOOD_DISPENSE_WEIGHT = 5.0; // Minimum grams for successful dispense
+const float LOW_FOOD_THRESHOLD = 50.0;      // Alert when food hopper below this
+
+// Rain Sensor Thresholds (0-4095 on ESP32 12-bit ADC)
+const int RAIN_DRY_THRESHOLD = 900;    // Above this = dry (no rain)
+const int RAIN_WET_THRESHOLD = 400;    // Below this = heavy rain
+
+// --- TEST MODE (set to true to bypass missing sensors) ---
+const bool BYPASS_WATER_LEVEL_SENSOR = true;  // Set to false when sensor is connected
+const bool BYPASS_RAIN_SENSOR = true;         // Set to false when sensor is connected (always dry when true)
+
+// --- CALIBRATION ---
+// Formula: (Raw_Value - Tare_Value) / Known_Weight_Grams
+const float LOADCELL_CALIBRATION_FACTOR = 110.060; 
+
+// --- OBJECTS ---
+HX711 scale;
+Servo foodServo;
+Servo waterServo;
+
+// --- STATE TRACKING ---
+unsigned long lastFoodDispenseTime = 0;
+unsigned long lastWaterDispenseTime = 0;
+unsigned long lastFoodButtonPress = 0;
+unsigned long lastWaterButtonPress = 0;
+bool rainDetected = false;
+
+// Button debouncing
+const unsigned long BUTTON_DEBOUNCE_MS = 50;
+
+void setup() {
+  // 1. Initialize Debug Serial (USB)
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("\n>>> SYSTEM STARTING: Smart Animal Feeder/Waterer <<<");
+
+  // 2. Enable Peripheral Power (Specific to Maker Feather)
+  pinMode(PIN_PWR_CTRL, OUTPUT);
+  digitalWrite(PIN_PWR_CTRL, HIGH); 
+  delay(100);
+
+  // 3. Initialize PIR Sensors
+  pinMode(PIN_PIR_FOOD, INPUT);
+  pinMode(PIN_PIR_WATER, INPUT);
+  Serial.println("- PIR Sensors Initialized");
+
+  // 4. Initialize Rain Sensor
+  pinMode(PIN_RAIN_ANALOG, INPUT);
+  Serial.println("- Rain Sensor Initialized");
+
+  // 5. Initialize Water Level Sensor
+  pinMode(PIN_WATER_LEVEL, INPUT_PULLUP); // Use internal pullup
+  Serial.println("- Water Level Sensor Initialized");
+
+  // 6. Initialize Manual Buttons
+  pinMode(PIN_BUTTON_FOOD, INPUT_PULLUP); // Use internal pullup
+  pinMode(PIN_BUTTON_WATER, INPUT_PULLUP); // Use internal pullup
+  Serial.println("- Manual Buttons Initialized");
+
+  // 7. Initialize Servos
+  foodServo.attach(PIN_SERVO_FOOD);
+  waterServo.attach(PIN_SERVO_WATER);
+  foodServo.write(SERVO_CLOSE_ANGLE);
+  waterServo.write(SERVO_CLOSE_ANGLE);
+  Serial.println("- Servos Initialized");
+
+  // 8. Initialize HX711 Scale
+  scale.begin(PIN_SCALE_DT, PIN_SCALE_SCK);
+  scale.set_scale(LOADCELL_CALIBRATION_FACTOR);
+  scale.tare();
+  Serial.println("- Food Scale Initialized");
+
+  // 9. Warm-up PIR sensors (they need ~60 seconds to stabilize)
+  Serial.println("- Warming up PIR sensors (10 seconds)...");
+  delay(10000);
+
+  Serial.println(">>> SYSTEM READY <<<\n");
+  printStatus();
+}
+
+void loop() {
+  // Check sensors periodically
+  checkRainSensor();
+  checkWaterLevel();
+  checkFoodLevel();
+  
+  // Check manual buttons (higher priority than PIR)
+  checkManualButtons();
+  
+  // Check PIR sensors for animal presence
+  checkFoodDispenser();
+  checkWaterDispenser();
+  
+  delay(100); // Small delay to prevent excessive polling
+}
+
+// ============================================
+// MANUAL BUTTON CONTROL
+// ============================================
+void checkManualButtons() {
+  // Food Button - Active LOW (pressed = LOW)
+  static bool lastFoodButtonState = HIGH;
+  bool currentFoodButton = digitalRead(PIN_BUTTON_FOOD);
+  
+  // Detect button press (HIGH to LOW transition)
+  if (lastFoodButtonState == HIGH && currentFoodButton == LOW) {
+    delay(BUTTON_DEBOUNCE_MS); // Debounce
+    if (digitalRead(PIN_BUTTON_FOOD) == LOW) { // Confirm still pressed
+      Serial.println("\n[MANUAL] Food button pressed!");
+      dispenseFood();
+      lastFoodDispenseTime = millis(); // Update cooldown
+      lastFoodButtonPress = millis();
+    }
+  }
+  lastFoodButtonState = currentFoodButton;
+  
+  // Water Button - Active LOW (pressed = LOW)
+  static bool lastWaterButtonState = HIGH;
+  bool currentWaterButton = digitalRead(PIN_BUTTON_WATER);
+  
+  // Detect button press (HIGH to LOW transition)
+  if (lastWaterButtonState == HIGH && currentWaterButton == LOW) {
+    delay(BUTTON_DEBOUNCE_MS); // Debounce
+    if (digitalRead(PIN_BUTTON_WATER) == LOW) { // Confirm still pressed
+      Serial.println("\n[MANUAL] Water button pressed!");
+      
+      // Check water level before dispensing (skip if bypassed for testing)
+      if (!BYPASS_WATER_LEVEL_SENSOR && digitalRead(PIN_WATER_LEVEL) == HIGH) {
+        Serial.println("[MANUAL] ! Cannot dispense: Water tank empty !");
+        return;
+      }
+      
+      dispenseWater();
+      lastWaterDispenseTime = millis(); // Update cooldown
+      lastWaterButtonPress = millis();
+    }
+  }
+  lastWaterButtonState = currentWaterButton;
+}
+
+// ============================================
+// FOOD DISPENSER LOGIC
+// ============================================
+void checkFoodDispenser() {
+  // Only dispense if cooldown period has passed
+  if (millis() - lastFoodDispenseTime < PIR_COOLDOWN_MS) {
+    return;
+  }
+
+  // Check if animal is detected by food PIR
+  if (digitalRead(PIN_PIR_FOOD) == HIGH) {
+    Serial.println("\n[FOOD] Animal detected at food station!");
+    
+    // Double-check after brief delay to reduce false triggers
+    delay(500);
+    if (digitalRead(PIN_PIR_FOOD) == HIGH) {
+      dispenseFood();
+      lastFoodDispenseTime = millis();
+    }
+  }
+}
+
+void dispenseFood() {
+  Serial.println("[FOOD] Dispensing food...");
+  
+  // 1. Check current food weight
+  float weightBefore = scale.get_units(5);
+  Serial.printf("[FOOD] Weight before: %.2f g\n", weightBefore);
+
+  if (weightBefore < 10.0) {
+    Serial.println("[FOOD] ! WARNING: Food hopper appears empty !");
+  }
+
+  // 2. Open food gate
+  foodServo.write(SERVO_OPEN_ANGLE);
+  delay(FOOD_DISPENSE_TIME_MS);
+  
+  // 3. Close food gate
+  foodServo.write(SERVO_CLOSE_ANGLE);
+  
+  // 4. Wait for scale to settle
+  Serial.println("[FOOD] Waiting for scale to settle...");
+  delay(SETTLE_TIME_MS);
+
+  // 5. Measure weight after dispensing
+  float weightAfter = scale.get_units(5);
+  Serial.printf("[FOOD] Weight after: %.2f g\n", weightAfter);
+
+  // 6. Calculate amount dispensed
+  float dispensed = weightBefore - weightAfter;
+
+  if (dispensed > MIN_FOOD_DISPENSE_WEIGHT) {
+    Serial.printf("[FOOD] >> SUCCESS: Dispensed %.2f g\n", dispensed);
+  } else {
+    Serial.printf("[FOOD] >> WARNING: Only %.2f g dispensed (possible jam)\n", dispensed);
+  }
+  
+  Serial.printf("[FOOD] Cooldown active for %d seconds...\n", PIR_COOLDOWN_MS/1000);
+}
+
+// ============================================
+// WATER DISPENSER LOGIC
+// ============================================
+void checkWaterDispenser() {
+  // Only dispense if cooldown period has passed
+  if (millis() - lastWaterDispenseTime < PIR_COOLDOWN_MS) {
+    return;
+  }
+
+  // Don't dispense water if it's raining
+  if (rainDetected) {
+    return;
+  }
+
+  // Check water level first (skip if bypassed for testing)
+  if (!BYPASS_WATER_LEVEL_SENSOR && digitalRead(PIN_WATER_LEVEL) == HIGH) {
+    Serial.println("[WATER] ! WARNING: Water tank empty !");
+    return;
+  }
+
+  // Check if animal is detected by water PIR
+  if (digitalRead(PIN_PIR_WATER) == HIGH) {
+    Serial.println("\n[WATER] Animal detected at water station!");
+    
+    // Double-check after brief delay
+    delay(500);
+    if (digitalRead(PIN_PIR_WATER) == HIGH) {
+      dispenseWater();
+      lastWaterDispenseTime = millis();
+    }
+  }
+}
+
+void dispenseWater() {
+  Serial.println("[WATER] Dispensing water...");
+  
+  // Open water valve
+  waterServo.write(SERVO_OPEN_ANGLE);
+  delay(WATER_DISPENSE_TIME_MS);
+  
+  // Close water valve
+  waterServo.write(SERVO_CLOSE_ANGLE);
+  
+  Serial.println("[WATER] >> Water dispensed successfully");
+  Serial.printf("[WATER] Cooldown active for %d seconds...\n", PIR_COOLDOWN_MS/1000);
+}
+
+// ============================================
+// SENSOR MONITORING FUNCTIONS
+// ============================================
+void checkRainSensor() {
+  // Skip rain detection if bypassed (always dry)
+  if (BYPASS_RAIN_SENSOR) {
+    rainDetected = false;
+    return;
+  }
+  
+  static unsigned long lastRainCheck = 0;
+  if (millis() - lastRainCheck < 5000) return; // Check every 5 seconds
+  lastRainCheck = millis();
+
+  int rainValue = analogRead(PIN_RAIN_ANALOG);
+  bool wasRaining = rainDetected;
+  
+  if (rainValue > RAIN_DRY_THRESHOLD) {
+    rainDetected = false;
+  } else if (rainValue < RAIN_WET_THRESHOLD) {
+    rainDetected = true;
+  }
+  
+  // Only print when status changes
+  if (rainDetected != wasRaining) {
+    Serial.printf("[RAIN] Status changed: %s (value: %d)\n", 
+                  rainDetected ? "RAINING" : "DRY", rainValue);
+    if (rainDetected) {
+      Serial.println("[RAIN] Water dispensing disabled during rain");
+    }
+  }
+}
+
+void checkWaterLevel() {
+  // Skip water level monitoring if sensor is bypassed
+  if (BYPASS_WATER_LEVEL_SENSOR) return;
+  
+  static unsigned long lastWaterCheck = 0;
+  static bool lastWaterStatus = false;
+  
+  if (millis() - lastWaterCheck < 10000) return; // Check every 10 seconds
+  lastWaterCheck = millis();
+
+  bool waterLow = (digitalRead(PIN_WATER_LEVEL) == HIGH);
+  
+  // Only print when status changes
+  if (waterLow != lastWaterStatus) {
+    if (waterLow) {
+      Serial.println("[WATER] ! ALERT: Water tank is LOW - Please refill !");
+    } else {
+      Serial.println("[WATER] Water tank refilled");
+    }
+    lastWaterStatus = waterLow;
+  }
+}
+
+void checkFoodLevel() {
+  static unsigned long lastFoodCheck = 0;
+  static bool lastFoodLowStatus = false;
+  
+  if (millis() - lastFoodCheck < 30000) return; // Check every 30 seconds
+  lastFoodCheck = millis();
+
+  float currentWeight = scale.get_units(3);
+  bool foodLow = (currentWeight < LOW_FOOD_THRESHOLD);
+  
+  // Only print when status changes
+  if (foodLow != lastFoodLowStatus) {
+    if (foodLow) {
+      Serial.printf("[FOOD] ! ALERT: Food level LOW (%.2f g) - Please refill !\n", currentWeight);
+    } else {
+      Serial.println("[FOOD] Food hopper refilled");
+    }
+    lastFoodLowStatus = foodLow;
+  }
+}
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+void printStatus() {
+  Serial.println("=== SYSTEM STATUS ===");
+  
+  // Food weight
+  float foodWeight = scale.get_units(3);
+  Serial.printf("Food Weight: %.2f g\n", foodWeight);
+  
+  // Water level
+  if (BYPASS_WATER_LEVEL_SENSOR) {
+    Serial.println("Water Level: BYPASSED (no sensor)");
+  } else {
+    bool waterEmpty = (digitalRead(PIN_WATER_LEVEL) == HIGH);
+    Serial.printf("Water Level: %s\n", waterEmpty ? "EMPTY" : "OK");
+  }
+  
+  // Rain status
+  if (BYPASS_RAIN_SENSOR) {
+    Serial.println("Rain Sensor: BYPASSED (forced DRY)");
+  } else {
+    int rainValue = analogRead(PIN_RAIN_ANALOG);
+    Serial.printf("Rain Sensor: %d (%s)\n", rainValue, 
+                  rainValue < RAIN_WET_THRESHOLD ? "RAINING" : "DRY");
+  }
+  
+  Serial.println("====================\n");
+} 
