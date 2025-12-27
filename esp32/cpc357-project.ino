@@ -98,7 +98,7 @@ const int RAIN_DRY_THRESHOLD = 2800;    // Above this = dry (no rain)
 const int RAIN_WET_THRESHOLD = 1200;    // Below this = heavy rain
 
 // --- TEST MODE (set to true to bypass missing sensors) ---
-const bool BYPASS_WATER_LEVEL_SENSOR = true;  // Set to false when sensor is connected
+const bool BYPASS_WATER_LEVEL_SENSOR = false;  // Set to false when sensor is connected
 const bool BYPASS_RAIN_SENSOR = false;         // Set to false when sensor is connected (always dry when true)
 
 // --- CALIBRATION ---
@@ -134,6 +134,12 @@ unsigned long lastMqttReconnectAttempt = 0;
 
 // Button debouncing
 const unsigned long BUTTON_DEBOUNCE_MS = 50;
+
+// State tracking for change detection (to send instant telemetry updates)
+bool lastWaterLevelOk = true;
+bool lastFoodLevelOk = true;  // Track food level status
+bool lastFoodPirState = false;
+bool lastWaterPirState = false;
 
 void setup() {
   // 1. Initialize Debug Serial (USB)
@@ -553,6 +559,14 @@ void checkManualButtons() {
 // FOOD DISPENSER LOGIC
 // ============================================
 void checkFoodDispenser() {
+  // Check if animal is detected by food PIR (for telemetry updates)
+  bool currentFoodPir = (digitalRead(PIN_PIR_FOOD) == HIGH);
+  if (currentFoodPir != lastFoodPirState) {
+    lastFoodPirState = currentFoodPir;
+    // Send instant telemetry when PIR state changes
+    sendTelemetry();
+  }
+  
   // Only dispense if cooldown period has passed
   if (millis() - lastFoodDispenseTime < PIR_COOLDOWN_MS) {
     return;
@@ -564,7 +578,7 @@ void checkFoodDispenser() {
   }
 
   // Check if animal is detected by food PIR
-  if (digitalRead(PIN_PIR_FOOD) == HIGH) {
+  if (currentFoodPir) {
     Serial.println("\n[FOOD] Animal detected at food station!");
     
     // Double-check after brief delay to reduce false triggers
@@ -625,6 +639,14 @@ void dispenseFoodWithReport(const char* triggerSource, const char* commandId) {
 // WATER DISPENSER LOGIC
 // ============================================
 void checkWaterDispenser() {
+  // Check if animal is detected by water PIR (for telemetry updates)
+  bool currentWaterPir = (digitalRead(PIN_PIR_WATER) == HIGH);
+  if (currentWaterPir != lastWaterPirState) {
+    lastWaterPirState = currentWaterPir;
+    // Send instant telemetry when PIR state changes
+    sendTelemetry();
+  }
+  
   // Only dispense if cooldown period has passed
   if (millis() - lastWaterDispenseTime < PIR_COOLDOWN_MS) {
     return;
@@ -636,13 +658,14 @@ void checkWaterDispenser() {
   }
 
   // Check water level first (skip if bypassed for testing)
-  if (!BYPASS_WATER_LEVEL_SENSOR && digitalRead(PIN_WATER_LEVEL) == HIGH) {
-    Serial.println("[WATER] ! WARNING: Water tank empty !");
+  bool waterAvailable = BYPASS_WATER_LEVEL_SENSOR || (digitalRead(PIN_WATER_LEVEL) == LOW);
+  if (!waterAvailable) {
+    // Water empty but don't print here - checkWaterLevel() already handles it
     return;
   }
 
   // Check if animal is detected by water PIR
-  if (digitalRead(PIN_PIR_WATER) == HIGH) {
+  if (currentWaterPir) {
     Serial.println("\n[WATER] Animal detected at water station!");
     
     // Double-check after brief delay
@@ -713,46 +736,47 @@ void checkRainSensor() {
 }
 
 void checkWaterLevel() {
-  // Skip water level monitoring if sensor is bypassed
-  if (BYPASS_WATER_LEVEL_SENSOR) return;
+  // Always check current water level status for instant telemetry updates
+  bool waterLevelOk = BYPASS_WATER_LEVEL_SENSOR ? true : (digitalRead(PIN_WATER_LEVEL) == LOW);
   
-  static unsigned long lastWaterCheck = 0;
-  static bool lastWaterStatus = false;
-  
-  if (millis() - lastWaterCheck < 10000) return; // Check every 10 seconds
-  lastWaterCheck = millis();
-
-  bool waterLow = (digitalRead(PIN_WATER_LEVEL) == HIGH);
-  
-  // Only print when status changes
-  if (waterLow != lastWaterStatus) {
-    if (waterLow) {
-      Serial.println("[WATER] ! ALERT: Water tank is LOW - Please refill !");
+  // Only print and send telemetry when status changes
+  if (waterLevelOk != lastWaterLevelOk) {
+    if (!waterLevelOk) {
+      Serial.println("[WATER] ! ALERT: Water tank is EMPTY - Please refill !");
+      Serial.println("[WATER] Sending instant telemetry update...");
     } else {
       Serial.println("[WATER] Water tank refilled");
+      Serial.println("[WATER] Sending instant telemetry update...");
     }
-    lastWaterStatus = waterLow;
+    lastWaterLevelOk = waterLevelOk;
+    
+    // Send telemetry immediately when water level changes
+    sendTelemetry();
   }
 }
 
 void checkFoodLevel() {
   static unsigned long lastFoodCheck = 0;
-  static bool lastFoodLowStatus = false;
   
   if (millis() - lastFoodCheck < 30000) return; // Check every 30 seconds
   lastFoodCheck = millis();
 
   float currentWeight = scale.get_units(3);
-  bool foodLow = (currentWeight < LOW_FOOD_THRESHOLD);
+  bool foodLevelOk = (currentWeight >= LOW_FOOD_THRESHOLD);
   
-  // Only print when status changes
-  if (foodLow != lastFoodLowStatus) {
-    if (foodLow) {
+  // Only print and send telemetry when status changes
+  if (foodLevelOk != lastFoodLevelOk) {
+    if (!foodLevelOk) {
       Serial.printf("[FOOD] ! ALERT: Food level LOW (%.2f g) - Please refill !\n", currentWeight);
+      Serial.println("[FOOD] Sending instant telemetry update...");
     } else {
       Serial.println("[FOOD] Food hopper refilled");
+      Serial.println("[FOOD] Sending instant telemetry update...");
     }
-    lastFoodLowStatus = foodLow;
+    lastFoodLevelOk = foodLevelOk;
+    
+    // Send telemetry immediately when food level changes
+    sendTelemetry();
   }
 }
 

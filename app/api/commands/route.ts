@@ -45,51 +45,60 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create command' }, { status: 500 })
     }
 
-    // Publish to GCP Pub/Sub
+    // Publish to GCP Pub/Sub (optional - ESP32 polls database)
     const topicName = process.env.GCP_PUBSUB_COMMANDS_TOPIC || 'feeder-commands'
-    const topic = pubsub.topic(topicName)
-
-    const message = {
-      command_id: dbCommand.id,
-      device_id,
-      command,
-      timestamp: new Date().toISOString(),
-    }
-
-    try {
-      const messageId = await topic.publishMessage({
-        data: Buffer.from(JSON.stringify(message)),
-        attributes: {
+    
+    // Try to publish to Pub/Sub, but don't fail if it doesn't work
+    // The ESP32 will pick up the command from the database anyway
+    if (process.env.GCP_PROJECT_ID && process.env.GCP_PUBSUB_COMMANDS_TOPIC) {
+      try {
+        const topic = pubsub.topic(topicName)
+        const message = {
+          command_id: dbCommand.id,
           device_id,
           command,
-        },
-      })
+          timestamp: new Date().toISOString(),
+        }
 
-      // Update command status to 'sent'
-      await supabase
-        .from('device_commands')
-        .update({ status: 'sent' })
-        .eq('id', dbCommand.id)
+        const messageId = await topic.publishMessage({
+          data: Buffer.from(JSON.stringify(message)),
+          attributes: {
+            device_id,
+            command,
+          },
+        })
 
-      return NextResponse.json({
-        success: true,
-        command: dbCommand,
-        pubsub_message_id: messageId,
-      })
-    } catch (pubsubError) {
-      console.error('Pub/Sub error:', pubsubError)
-      
-      // Update command status to 'failed'
-      await supabase
-        .from('device_commands')
-        .update({ status: 'failed' })
-        .eq('id', dbCommand.id)
+        console.log('Command published to Pub/Sub:', messageId)
+        
+        // Update command status to 'sent'
+        await supabase
+          .from('device_commands')
+          .update({ status: 'sent' })
+          .eq('id', dbCommand.id)
 
-      return NextResponse.json(
-        { error: 'Failed to publish command to device', command: dbCommand },
-        { status: 500 }
-      )
+        return NextResponse.json({
+          success: true,
+          command: dbCommand,
+          pubsub_message_id: messageId,
+        })
+      } catch (pubsubError) {
+        console.error('Pub/Sub error (non-critical):', pubsubError)
+        // Don't fail the request - ESP32 will poll the database
+      }
     }
+
+    // If Pub/Sub is not configured or failed, return success anyway
+    // ESP32 will poll the database for pending commands
+    await supabase
+      .from('device_commands')
+      .update({ status: 'sent' })
+      .eq('id', dbCommand.id)
+
+    return NextResponse.json({
+      success: true,
+      command: dbCommand,
+      message: 'Command saved to database. Device will execute it shortly.',
+    })
   } catch (error) {
     console.error('Error processing command:', error)
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
