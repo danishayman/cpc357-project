@@ -3,33 +3,46 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { 
-  Droplets, 
-  Beef, 
-  CloudRain, 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
+import {
+  Droplets,
+  Beef,
+  CloudRain,
+  Wifi,
+  WifiOff,
+  RefreshCw,
   LogOut,
   Activity,
   Scale,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Sun
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   AreaChart,
   Area
 } from 'recharts'
 import type { SensorReading, DispenseEvent, DeviceStatus } from '@/lib/types/database'
 
+/**
+ * Dashboard Page - Outdoor Daylight Theme
+ * 
+ * Design Philosophy: "Built for sunlight, rain, and quick glances"
+ * 
+ * Key Features:
+ * - Warm stone background for outdoor visibility
+ * - High contrast text and values
+ * - Touch-friendly controls (min 48px)
+ * - Color-coded status indicators (food=amber, water=cyan, status=emerald)
+ * - Responsive grid: 1 col (mobile) → 2 col (tablet) → 4 col (desktop)
+ */
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [latestReading, setLatestReading] = useState<SensorReading | null>(null)
@@ -38,7 +51,7 @@ export default function DashboardPage() {
   const [sensorHistory, setSensorHistory] = useState<SensorReading[]>([])
   const [commandLoading, setCommandLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  
+
   const router = useRouter()
   const supabase = createClient()
 
@@ -106,11 +119,11 @@ export default function DashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command }),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to send command')
       }
-      
+
       // Show success feedback
       setError(null)
     } catch (err) {
@@ -127,10 +140,14 @@ export default function DashboardPage() {
     router.refresh()
   }
 
+  // Loading State - Light theme
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-stone-200 border-t-emerald-600"></div>
+          <p className="text-stone-600 font-medium">Loading dashboard...</p>
+        </div>
       </div>
     )
   }
@@ -148,267 +165,355 @@ export default function DashboardPage() {
     rain: reading.rain_value ?? 0,
   }))
 
+  // Helper function to get food level status
+  const getFoodStatus = (weight: number) => {
+    if (weight > 500) return { text: 'Good level', color: 'text-emerald-700', bg: 'bg-emerald-500' }
+    if (weight > 200) return { text: 'Running low', color: 'text-amber-700', bg: 'bg-amber-500' }
+    return { text: 'Refill needed!', color: 'text-red-700', bg: 'bg-red-500' }
+  }
+
+  const foodStatus = getFoodStatus(foodWeight)
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            🐾 Smart Feeder Dashboard
-          </h1>
-          <p className="text-slate-400 mt-1">Monitor and control your stray animal feeder</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={fetchData}
-            className="p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition"
-            title="Refresh"
-          >
-            <RefreshCw className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleLogout}
-            className="p-2 bg-slate-700 hover:bg-red-600 rounded-lg text-white transition"
-            title="Logout"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-stone-50">
+      {/* ========== HEADER ========== */}
+      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            {/* Title Section */}
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-800 flex items-center gap-2 sm:gap-3">
+                <span aria-hidden="true">🐾</span>
+                <span className="hidden sm:inline">Smart Feeder Dashboard</span>
+                <span className="sm:hidden">Dashboard</span>
+              </h1>
+              <p className="text-stone-500 text-sm mt-0.5 hidden sm:block">
+                Monitor and control your stray animal feeder
+              </p>
+            </div>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-400 flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5" />
-          {error}
+            {/* Action Buttons - Touch-friendly */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={fetchData}
+                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                title="Refresh data"
+                aria-label="Refresh data"
+              >
+                <RefreshCw className="w-5 h-5" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-red-100 active:bg-red-200 hover:text-red-700 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                title="Log out"
+                aria-label="Log out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+      </header>
 
-      {/* Device Status Banner */}
-      <div className={`mb-6 p-4 rounded-xl flex items-center justify-between ${
-        isOnline ? 'bg-green-900/30 border border-green-700' : 'bg-red-900/30 border border-red-700'
-      }`}>
-        <div className="flex items-center gap-3">
-          {isOnline ? (
-            <Wifi className="w-6 h-6 text-green-400" />
-          ) : (
-            <WifiOff className="w-6 h-6 text-red-400" />
+      {/* ========== MAIN CONTENT ========== */}
+      <main className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto">
+
+        {/* Error Alert */}
+        {error && (
+          <div
+            className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 flex items-center gap-3"
+            role="alert"
+          >
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span className="font-medium">{error}</span>
+          </div>
+        )}
+
+        {/* ========== DEVICE STATUS BANNER ========== */}
+        <div className={`mb-6 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isOnline
+            ? 'bg-emerald-50 border-2 border-emerald-200'
+            : 'bg-red-50 border-2 border-red-200'
+          }`}>
+          <div className="flex items-center gap-3">
+            {isOnline ? (
+              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                <Wifi className="w-5 h-5 text-emerald-600" />
+              </div>
+            ) : (
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <WifiOff className="w-5 h-5 text-red-600" />
+              </div>
+            )}
+            <div>
+              <p className={`font-semibold ${isOnline ? 'text-emerald-800' : 'text-red-800'}`}>
+                Device {isOnline ? 'Online' : 'Offline'}
+              </p>
+              {deviceStatus?.last_seen && (
+                <p className="text-sm text-stone-600">
+                  Last seen: {formatDistanceToNow(new Date(deviceStatus.last_seen), { addSuffix: true })}
+                </p>
+              )}
+            </div>
+          </div>
+          {deviceStatus?.firmware_version && (
+            <span className="text-sm text-stone-500 bg-white/50 px-3 py-1 rounded-full">
+              v{deviceStatus.firmware_version}
+            </span>
           )}
-          <div>
-            <p className={`font-medium ${isOnline ? 'text-green-400' : 'text-red-400'}`}>
-              Device {isOnline ? 'Online' : 'Offline'}
+        </div>
+
+        {/* ========== METRIC CARDS GRID ========== */}
+        {/* Responsive: 1 col (mobile) → 2 col (tablet) → 4 col (desktop) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+
+          {/* Food Weight Card */}
+          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Scale className="w-6 h-6 text-amber-600" />
+              </div>
+              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+                Food Level
+              </span>
+            </div>
+            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{foodWeight.toFixed(0)}g</p>
+            {/* Progress Bar */}
+            <div className="mt-3 w-full bg-stone-200 rounded-full h-2.5">
+              <div
+                className={`h-2.5 rounded-full transition-all duration-300 ${foodStatus.bg}`}
+                style={{ width: `${Math.min((foodWeight / 1000) * 100, 100)}%` }}
+              />
+            </div>
+            <p className={`text-sm font-medium mt-2 ${foodStatus.color}`}>
+              {foodStatus.text}
             </p>
-            {deviceStatus?.last_seen && (
-              <p className="text-sm text-slate-400">
-                Last seen: {formatDistanceToNow(new Date(deviceStatus.last_seen), { addSuffix: true })}
+          </div>
+
+          {/* Water Level Card */}
+          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
+                <Droplets className="w-6 h-6 text-cyan-600" />
+              </div>
+              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+                Water Level
+              </span>
+            </div>
+            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{waterOk ? 'OK' : 'LOW'}</p>
+            {/* Status Bar */}
+            <div className={`mt-3 w-full h-2.5 rounded-full ${waterOk ? 'bg-cyan-500' : 'bg-red-500'}`} />
+            <p className={`text-sm font-medium mt-2 ${waterOk ? 'text-cyan-700' : 'text-red-700'}`}>
+              {waterOk ? 'Water tank has water' : 'Water tank empty!'}
+            </p>
+          </div>
+
+          {/* Weather Card */}
+          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isRaining ? 'bg-blue-100' : 'bg-amber-100'
+                }`}>
+                {isRaining ? (
+                  <CloudRain className="w-6 h-6 text-blue-600" />
+                ) : (
+                  <Sun className="w-6 h-6 text-amber-600" />
+                )}
+              </div>
+              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+                Weather
+              </span>
+            </div>
+            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">
+              {isRaining ? 'Raining' : 'Dry'}
+            </p>
+            <p className="text-sm text-stone-500 mt-3">Sensor value: {rainValue}</p>
+          </div>
+
+          {/* Activity Card */}
+          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
+                <Activity className="w-6 h-6 text-violet-600" />
+              </div>
+              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+                Today
+              </span>
+            </div>
+            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{recentEvents.length}</p>
+            <p className="text-sm text-stone-500 mt-3">Dispense events</p>
+          </div>
+        </div>
+
+        {/* ========== CONTROL BUTTONS & CHART ROW ========== */}
+        {/* Responsive: Stack on mobile, side-by-side on larger screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+
+          {/* Remote Control Panel */}
+          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+              <span aria-hidden="true">🎮</span> Remote Control
+            </h2>
+            <div className="space-y-3 sm:space-y-4">
+              {/* Dispense Food Button */}
+              <button
+                onClick={() => sendCommand('dispense_food')}
+                disabled={!isOnline || commandLoading !== null || isRaining}
+                className="w-full py-4 px-6 min-h-[56px] bg-amber-500 hover:bg-amber-600 active:bg-amber-700 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                {commandLoading === 'dispense_food' ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Beef className="w-5 h-5" />
+                )}
+                Dispense Food
+              </button>
+
+              {/* Dispense Water Button */}
+              <button
+                onClick={() => sendCommand('dispense_water')}
+                disabled={!isOnline || commandLoading !== null || isRaining}
+                className="w-full py-4 px-6 min-h-[56px] bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                {commandLoading === 'dispense_water' ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Droplets className="w-5 h-5" />
+                )}
+                Dispense Water
+              </button>
+            </div>
+
+            {/* Status Messages */}
+            {!isOnline && (
+              <p className="text-sm text-red-600 mt-4 text-center font-medium bg-red-50 py-2 rounded-lg">
+                Device is offline. Commands unavailable.
+              </p>
+            )}
+            {isRaining && isOnline && (
+              <p className="text-sm text-amber-700 mt-4 text-center flex items-center justify-center gap-2 font-medium bg-amber-50 py-2 rounded-lg">
+                <CloudRain className="w-4 h-4" />
+                Dispensing disabled during rain
               </p>
             )}
           </div>
-        </div>
-        {deviceStatus?.firmware_version && (
-          <span className="text-sm text-slate-400">v{deviceStatus.firmware_version}</span>
-        )}
-      </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Food Weight Card */}
-        <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-          <div className="flex items-center justify-between mb-4">
-            <Scale className="w-8 h-8 text-orange-400" />
-            <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">Food Level</span>
+          {/* Food Weight Chart */}
+          <div className="lg:col-span-2 bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4">
+              📊 Food Weight History (24h)
+            </h2>
+            <div className="h-64">
+              {chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorWeightOutdoor" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.05} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
+                    <XAxis
+                      dataKey="time"
+                      stroke="#78716c"
+                      fontSize={12}
+                      tick={{ fill: '#57534e' }}
+                    />
+                    <YAxis
+                      stroke="#78716c"
+                      fontSize={12}
+                      tick={{ fill: '#57534e' }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e7e5e4',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        color: '#292524'
+                      }}
+                      labelStyle={{ color: '#57534e', fontWeight: 600 }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="weight"
+                      stroke="#d97706"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorWeightOutdoor)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-stone-400">
+                  <p>No data available</p>
+                </div>
+              )}
+            </div>
           </div>
-          <p className="text-3xl font-bold text-white">{foodWeight.toFixed(0)}g</p>
-          <div className="mt-3 w-full bg-slate-700 rounded-full h-2">
-            <div 
-              className={`h-2 rounded-full transition-all ${
-                foodWeight > 500 ? 'bg-green-500' : 
-                foodWeight > 200 ? 'bg-yellow-500' : 'bg-red-500'
-              }`}
-              style={{ width: `${Math.min((foodWeight / 1000) * 100, 100)}%` }}
-            />
-          </div>
-          <p className="text-sm text-slate-400 mt-2">
-            {foodWeight > 500 ? 'Good level' : foodWeight > 200 ? 'Running low' : 'Refill needed!'}
-          </p>
         </div>
 
-        {/* Water Level Card */}
-        <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-          <div className="flex items-center justify-between mb-4">
-            <Droplets className="w-8 h-8 text-blue-400" />
-            <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">Water Level</span>
-          </div>
-          <p className="text-3xl font-bold text-white">{waterOk ? 'OK' : 'LOW'}</p>
-          <div className={`mt-3 w-full h-2 rounded-full ${waterOk ? 'bg-blue-500' : 'bg-red-500'}`} />
-          <p className="text-sm text-slate-400 mt-2">
-            {waterOk ? 'Water tank has water' : 'Water tank empty!'}
-          </p>
-        </div>
-
-        {/* Weather Card */}
-        <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-          <div className="flex items-center justify-between mb-4">
-            <CloudRain className={`w-8 h-8 ${isRaining ? 'text-blue-400' : 'text-slate-400'}`} />
-            <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">Weather</span>
-          </div>
-          <p className="text-3xl font-bold text-white">{isRaining ? 'Raining' : 'Dry'}</p>
-          <p className="text-sm text-slate-400 mt-2">Sensor value: {rainValue}</p>
-        </div>
-
-        {/* Activity Card */}
-        <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-          <div className="flex items-center justify-between mb-4">
-            <Activity className="w-8 h-8 text-purple-400" />
-            <span className="text-xs text-slate-400 bg-slate-700 px-2 py-1 rounded">Today</span>
-          </div>
-          <p className="text-3xl font-bold text-white">{recentEvents.length}</p>
-          <p className="text-sm text-slate-400 mt-2">Dispense events</p>
-        </div>
-      </div>
-
-      {/* Control Buttons & Chart Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Remote Control Panel */}
-        <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-            🎮 Remote Control
+        {/* ========== RECENT EVENTS TABLE ========== */}
+        <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+          <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-stone-500" />
+            Recent Dispense Events
           </h2>
-          <div className="space-y-4">
-            <button
-              onClick={() => sendCommand('dispense_food')}
-              disabled={!isOnline || commandLoading !== null || isRaining}
-              className="w-full py-4 px-6 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
-            >
-              {commandLoading === 'dispense_food' ? (
-                <RefreshCw className="w-5 h-5 animate-spin" />
-              ) : (
-                <Beef className="w-5 h-5" />
-              )}
-              Dispense Food
-            </button>
-            <button
-              onClick={() => sendCommand('dispense_water')}
-              disabled={!isOnline || commandLoading !== null || isRaining}
-              className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
-            >
-              {commandLoading === 'dispense_water' ? (
-                <RefreshCw className="w-5 h-5 animate-spin" />
-              ) : (
-                <Droplets className="w-5 h-5" />
-              )}
-              Dispense Water
-            </button>
-          </div>
-          {!isOnline && (
-            <p className="text-sm text-red-400 mt-4 text-center">
-              Device is offline. Commands unavailable.
-            </p>
-          )}
-          {isRaining && (
-            <p className="text-sm text-yellow-400 mt-4 text-center flex items-center justify-center gap-2">
-              <CloudRain className="w-4 h-4" />
-              Dispensing disabled during rain
-            </p>
-          )}
-        </div>
 
-        {/* Food Weight Chart */}
-        <div className="lg:col-span-2 bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-          <h2 className="text-xl font-semibold text-white mb-4">📊 Food Weight History (24h)</h2>
-          <div className="h-64">
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis dataKey="time" stroke="#9ca3af" fontSize={12} />
-                  <YAxis stroke="#9ca3af" fontSize={12} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1f2937', 
-                      border: '1px solid #374151',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="weight" 
-                    stroke="#f97316" 
-                    fillOpacity={1} 
-                    fill="url(#colorWeight)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-slate-400">
-                No data available
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Events Table */}
-      <div className="bg-slate-800/50 backdrop-blur-lg rounded-xl p-6 border border-slate-700">
-        <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5" />
-          Recent Dispense Events
-        </h2>
-        {recentEvents.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-slate-400 text-sm border-b border-slate-700">
-                  <th className="pb-3">Time</th>
-                  <th className="pb-3">Type</th>
-                  <th className="pb-3">Trigger</th>
-                  <th className="pb-3">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentEvents.map((event) => (
-                  <tr key={event.id} className="border-b border-slate-700/50 text-white">
-                    <td className="py-3 text-slate-400">
-                      {format(new Date(event.created_at), 'MMM d, HH:mm:ss')}
-                    </td>
-                    <td className="py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                        event.event_type === 'food' 
-                          ? 'bg-orange-900/50 text-orange-400' 
-                          : 'bg-blue-900/50 text-blue-400'
-                      }`}>
-                        {event.event_type === 'food' ? <Beef className="w-3 h-3" /> : <Droplets className="w-3 h-3" />}
-                        {event.event_type}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        event.trigger_source === 'remote' 
-                          ? 'bg-purple-900/50 text-purple-400'
-                          : event.trigger_source === 'pir'
-                          ? 'bg-green-900/50 text-green-400'
-                          : 'bg-slate-700 text-slate-300'
-                      }`}>
-                        {event.trigger_source}
-                      </span>
-                    </td>
-                    <td className="py-3">
-                      {event.amount_dispensed ? `${event.amount_dispensed}g` : '-'}
-                    </td>
+          {recentEvents.length > 0 ? (
+            <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
+              <table className="w-full min-w-[500px]">
+                <thead>
+                  <tr className="text-left text-stone-500 text-sm border-b-2 border-stone-200">
+                    <th className="pb-3 font-semibold">Time</th>
+                    <th className="pb-3 font-semibold">Type</th>
+                    <th className="pb-3 font-semibold">Trigger</th>
+                    <th className="pb-3 font-semibold">Amount</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-slate-400 text-center py-8">No dispense events yet</p>
-        )}
-      </div>
+                </thead>
+                <tbody>
+                  {recentEvents.map((event, index) => (
+                    <tr
+                      key={event.id}
+                      className={`border-b border-stone-100 text-stone-800 ${index % 2 === 0 ? 'bg-white' : 'bg-stone-50'
+                        }`}
+                    >
+                      <td className="py-3 text-stone-600 text-sm">
+                        {format(new Date(event.created_at), 'MMM d, HH:mm:ss')}
+                      </td>
+                      <td className="py-3">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${event.event_type === 'food'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-cyan-100 text-cyan-700'
+                          }`}>
+                          {event.event_type === 'food' ? <Beef className="w-3 h-3" /> : <Droplets className="w-3 h-3" />}
+                          {event.event_type}
+                        </span>
+                      </td>
+                      <td className="py-3">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${event.trigger_source === 'remote'
+                            ? 'bg-violet-100 text-violet-700'
+                            : event.trigger_source === 'pir'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-stone-100 text-stone-600'
+                          }`}>
+                          {event.trigger_source}
+                        </span>
+                      </td>
+                      <td className="py-3 font-medium">
+                        {event.amount_dispensed ? `${event.amount_dispensed}g` : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-stone-400">No dispense events yet</p>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   )
 }

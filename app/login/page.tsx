@@ -5,6 +5,15 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+/**
+ * Login Page - Outdoor Daylight Theme
+ * 
+ * Optimized for outdoor use with:
+ * - High contrast form elements
+ * - Touch-friendly input fields (min 48px height)
+ * - Clear error states with strong visibility
+ * - Large, accessible buttons
+ */
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,22 +42,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="w-full max-w-md p-8 space-y-6 bg-slate-800/50 backdrop-blur-lg rounded-2xl border border-slate-700 shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-stone-100 p-4">
+      {/* Card Container - White with soft shadow for outdoor visibility */}
+      <div className="w-full max-w-md p-6 sm:p-8 space-y-6 bg-white rounded-2xl border border-stone-200 shadow-lg">
+        {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">🐾 Smart Feeder</h1>
-          <p className="text-slate-400">Sign in to your dashboard</p>
+          <div className="text-5xl mb-3" aria-hidden="true">🐾</div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-800 mb-2">Smart Feeder</h1>
+          <p className="text-stone-600">Sign in to your dashboard</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-5">
+          {/* Error Alert - High contrast for visibility */}
           {error && (
-            <div className="p-3 text-sm text-red-400 bg-red-900/30 border border-red-800 rounded-lg">
-              {error}
+            <div
+              className="p-4 text-sm text-red-700 bg-red-50 border-2 border-red-200 rounded-lg flex items-start gap-2"
+              role="alert"
+            >
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
+          {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="email" className="block text-sm font-semibold text-stone-700 mb-2">
               Email
             </label>
             <input
@@ -57,13 +77,15 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              autoComplete="email"
+              className="w-full px-4 py-3 min-h-[48px] bg-white border-2 border-stone-300 rounded-lg text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-base"
               placeholder="you@example.com"
             />
           </div>
 
+          {/* Password Field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
+            <label htmlFor="password" className="block text-sm font-semibold text-stone-700 mb-2">
               Password
             </label>
             <input
@@ -72,23 +94,39 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              autoComplete="current-password"
+              className="w-full px-4 py-3 min-h-[48px] bg-white border-2 border-stone-300 rounded-lg text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors text-base"
               placeholder="••••••••"
             />
           </div>
 
+          {/* Submit Button - Large touch target */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02]"
+            className="w-full py-4 px-4 min-h-[52px] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors duration-150 shadow-sm text-base"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Signing in...
+              </span>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
 
-        <p className="text-center text-slate-400 text-sm">
+        {/* Sign Up Link */}
+        <p className="text-center text-stone-600 text-sm">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-blue-400 hover:text-blue-300 font-medium">
+          <Link
+            href="/signup"
+            className="text-cyan-700 hover:text-cyan-800 font-semibold underline underline-offset-2"
+          >
             Sign up
           </Link>
         </p>

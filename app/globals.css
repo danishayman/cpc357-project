@@ -1,26 +1,243 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   OUTDOOR DAYLIGHT THEME - Smart Feeder Dashboard
+   ============================================================================
+   Design Philosophy: "Built for sunlight, rain, and quick glances"
+   
+   This theme prioritizes:
+   - High contrast for outdoor visibility
+   - Warm, natural color palette
+   - Clear typography hierarchy
+   - Touch-friendly interactions
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background Colors - Warm stone base for outdoor readability */
+  --background: #fafaf9;           /* stone-50 */
+  --background-card: #ffffff;       /* white */
+  --background-muted: #f5f5f4;      /* stone-100 */
+  
+  /* Text Colors - High contrast for sunlight visibility */
+  --foreground: #292524;            /* stone-800 - primary text */
+  --foreground-secondary: #57534e;  /* stone-600 - secondary text */
+  --foreground-muted: #78716c;      /* stone-500 - muted text */
+  
+  /* Border Colors */
+  --border: #e7e5e4;                /* stone-200 */
+  --border-strong: #d6d3d1;         /* stone-300 */
+  
+  /* Accent Colors - Natural, outdoor-inspired palette */
+  --accent-success: #059669;        /* emerald-600 - online, success states */
+  --accent-success-soft: #d1fae5;   /* emerald-100 - success backgrounds */
+  --accent-food: #d97706;           /* amber-600 - food-related elements */
+  --accent-food-soft: #fef3c7;      /* amber-100 - food backgrounds */
+  --accent-water: #0891b2;          /* cyan-600 - water-related elements */
+  --accent-water-soft: #cffafe;     /* cyan-100 - water backgrounds */
+  --accent-error: #dc2626;          /* red-600 - errors, offline states */
+  --accent-error-soft: #fee2e2;     /* red-100 - error backgrounds */
+  --accent-warning: #ea580c;        /* orange-600 - warnings */
+  --accent-warning-soft: #ffedd5;   /* orange-100 - warning backgrounds */
+  --accent-info: #7c3aed;           /* violet-600 - activity, info */
+  --accent-info-soft: #ede9fe;      /* violet-100 - info backgrounds */
+  
+  /* Interactive Elements */
+  --ring-focus: #0891b2;            /* cyan-600 - focus rings */
+  
+  /* Chart Colors */
+  --chart-food: #f59e0b;            /* amber-500 */
+  --chart-water: #06b6d4;           /* cyan-500 */
+  --chart-grid: #d6d3d1;            /* stone-300 */
 }
 
+/* Base Theme Settings */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Reset & Base Styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   UTILITY CLASSES - Outdoor Daylight Theme Specific
+   ========================================================================== */
+
+/* Card Styles - Soft shadows optimized for outdoor visibility */
+.card-outdoor {
+  background: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem; /* 12px */
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.card-outdoor:hover {
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+/* Touch-Friendly Button Base - Minimum 48px height for outdoor use */
+.btn-outdoor {
+  min-height: 48px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 150ms ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-outdoor:focus-visible {
+  outline: 2px solid var(--ring-focus);
+  outline-offset: 2px;
+}
+
+.btn-outdoor:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Input Styles - High contrast for outdoor forms */
+.input-outdoor {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  background: var(--background-card);
+  border: 2px solid var(--border-strong);
+  border-radius: 0.5rem;
+  color: var(--foreground);
+  font-size: 1rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-outdoor::placeholder {
+  color: var(--foreground-muted);
+}
+
+.input-outdoor:focus {
+  outline: none;
+  border-color: var(--ring-focus);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+/* Status Badge Styles */
+.badge-success {
+  background: var(--accent-success-soft);
+  color: var(--accent-success);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.badge-error {
+  background: var(--accent-error-soft);
+  color: var(--accent-error);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.badge-food {
+  background: var(--accent-food-soft);
+  color: var(--accent-food);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.badge-water {
+  background: var(--accent-water-soft);
+  color: var(--accent-water);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.badge-info {
+  background: var(--accent-info-soft);
+  color: var(--accent-info);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Progress Bar Styles */
+.progress-outdoor {
+  width: 100%;
+  height: 0.5rem;
+  background: var(--border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-outdoor-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 300ms ease;
+}
+
+/* ==========================================================================
+   RESPONSIVE UTILITIES
+   ============================================================================
+   Mobile-first responsive design for outdoor device usage
+   ========================================================================== */
+
+/* Container with responsive padding */
+.container-outdoor {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-outdoor {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-outdoor {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY ENHANCEMENTS
+   ========================================================================== */
+
+/* Ensure sufficient focus visibility for outdoor use */
+*:focus-visible {
+  outline: 2px solid var(--ring-focus);
+  outline-offset: 2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -2,6 +2,15 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
+/**
+ * Landing Page - Outdoor Daylight Theme
+ * 
+ * Designed for outdoor visibility with:
+ * - Warm stone background instead of dark gradients
+ * - High contrast text for sunlight readability
+ * - Large touch-friendly buttons
+ * - Natural color palette (emerald, stone)
+ */
 export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -11,51 +20,69 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-stone-50 flex flex-col items-center justify-center p-4 sm:p-8">
       <div className="text-center max-w-2xl">
-        <div className="text-8xl mb-6">🐾</div>
-        <h1 className="text-5xl font-bold text-white mb-4">
+        {/* Hero Icon */}
+        <div className="text-7xl sm:text-8xl mb-6" aria-hidden="true">🐾</div>
+
+        {/* Main Heading - High contrast for outdoor visibility */}
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-stone-800 mb-4">
           Smart Stray Animal Feeder
         </h1>
-        <p className="text-xl text-slate-400 mb-8">
-          Monitor and control your automated feeder remotely. 
+
+        {/* Subheading */}
+        <p className="text-lg sm:text-xl text-stone-600 mb-8 leading-relaxed">
+          Monitor and control your automated feeder remotely.
           Keep track of food levels, water status, and feeding events in real-time.
         </p>
-        
+
+        {/* CTA Buttons - Touch-friendly with minimum 48px height */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link 
+          <Link
             href="/login"
-            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition duration-200 ease-in-out transform hover:scale-105"
+            className="px-8 py-4 min-h-[48px] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold rounded-xl transition-colors duration-150 shadow-sm hover:shadow-md flex items-center justify-center"
           >
             Sign In
           </Link>
-          <Link 
+          <Link
             href="/signup"
-            className="px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl transition duration-200 ease-in-out transform hover:scale-105"
+            className="px-8 py-4 min-h-[48px] bg-white hover:bg-stone-100 active:bg-stone-200 text-stone-800 font-semibold rounded-xl transition-colors duration-150 border-2 border-stone-300 hover:border-stone-400 flex items-center justify-center"
           >
             Create Account
           </Link>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="bg-slate-800/50 backdrop-blur-lg p-6 rounded-xl border border-slate-700">
-            <div className="text-3xl mb-3">📊</div>
-            <h3 className="text-lg font-semibold text-white mb-2">Real-time Monitoring</h3>
-            <p className="text-slate-400 text-sm">
+        {/* Feature Cards Grid - Responsive layout */}
+        <div className="mt-12 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 text-left">
+          {/* Real-time Monitoring Feature */}
+          <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl" aria-hidden="true">📊</span>
+            </div>
+            <h3 className="text-lg font-semibold text-stone-800 mb-2">Real-time Monitoring</h3>
+            <p className="text-stone-600 text-sm leading-relaxed">
               Track food weight, water levels, and weather conditions live from anywhere.
             </p>
           </div>
-          <div className="bg-slate-800/50 backdrop-blur-lg p-6 rounded-xl border border-slate-700">
-            <div className="text-3xl mb-3">🎮</div>
-            <h3 className="text-lg font-semibold text-white mb-2">Remote Control</h3>
-            <p className="text-slate-400 text-sm">
+
+          {/* Remote Control Feature */}
+          <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl" aria-hidden="true">🎮</span>
+            </div>
+            <h3 className="text-lg font-semibold text-stone-800 mb-2">Remote Control</h3>
+            <p className="text-stone-600 text-sm leading-relaxed">
               Dispense food and water remotely with a single click from your dashboard.
             </p>
           </div>
-          <div className="bg-slate-800/50 backdrop-blur-lg p-6 rounded-xl border border-slate-700">
-            <div className="text-3xl mb-3">📱</div>
-            <h3 className="text-lg font-semibold text-white mb-2">Event History</h3>
-            <p className="text-slate-400 text-sm">
+
+          {/* Event History Feature */}
+          <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl" aria-hidden="true">📱</span>
+            </div>
+            <h3 className="text-lg font-semibold text-stone-800 mb-2">Event History</h3>
+            <p className="text-stone-600 text-sm leading-relaxed">
               View detailed logs of all feeding events and animal activity.
             </p>
           </div>
