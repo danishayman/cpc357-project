@@ -43,12 +43,12 @@ const char* DEVICE_ID = "esp32-feeder-01";
 // ============================================
 // TODO: Replace with your GCP VM's EXTERNAL IP address
 // Find it in GCP Console > Compute Engine > VM instances > External IP column
-const char* MQTT_SERVER = "YOUR_GCP_VM_EXTERNAL_IP";  // e.g., "34.123.45.67"
+const char* MQTT_SERVER = "34.87.168.186";  // e.g., "34.123.45.67" 136.110.63.138
 const int MQTT_PORT = 1883;                            // Standard MQTT port
 
 // TODO: Replace with the credentials you created with mosquitto_passwd
 const char* MQTT_USER = "esp32_feeder";                // The user you created
-const char* MQTT_PASS = "YOUR_MQTT_PASSWORD";          // The password you set
+const char* MQTT_PASS = "Papajala*123";          // The password you set
 
 // MQTT Topics - Matches the MQTT-Supabase bridge expectations
 String SENSOR_TOPIC;      // petfeeder/{device_id}/sensors
@@ -74,7 +74,7 @@ const char* FIRMWARE_VERSION = "1.0.0";
 #define PIN_WATER_LEVEL     18  // Float switch (LOW=full, HIGH=empty)
 #define PIN_SCALE_DT        16  // HX711 data pin
 #define PIN_SCALE_SCK       15  // HX711 clock pin
-#define PIN_BUTTON_FOOD     13  // Manual food dispense button
+#define PIN_BUTTON_FOOD     4  // Manual food dispense button
 #define PIN_BUTTON_WATER    6  // Manual water dispense button
 #define PIN_PWR_CTRL        11  // Maker Feather 3V3 Regulator Control
 
@@ -94,12 +94,12 @@ const float MIN_FOOD_DISPENSE_WEIGHT = 5.0; // Minimum grams for successful disp
 const float LOW_FOOD_THRESHOLD = 50.0;      // Alert when food hopper below this
 
 // Rain Sensor Thresholds (0-4095 on ESP32 12-bit ADC)
-const int RAIN_DRY_THRESHOLD = 900;    // Above this = dry (no rain)
-const int RAIN_WET_THRESHOLD = 400;    // Below this = heavy rain
+const int RAIN_DRY_THRESHOLD = 2800;    // Above this = dry (no rain)
+const int RAIN_WET_THRESHOLD = 1200;    // Below this = heavy rain
 
 // --- TEST MODE (set to true to bypass missing sensors) ---
 const bool BYPASS_WATER_LEVEL_SENSOR = true;  // Set to false when sensor is connected
-const bool BYPASS_RAIN_SENSOR = true;         // Set to false when sensor is connected (always dry when true)
+const bool BYPASS_RAIN_SENSOR = false;         // Set to false when sensor is connected (always dry when true)
 
 // --- CALIBRATION ---
 // Formula: (Raw_Value - Tare_Value) / Known_Weight_Grams
@@ -368,13 +368,27 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   bool success = false;
   if (strcmp(command, "dispense_food") == 0) {
     Serial.println("[MQTT] Executing remote food dispense...");
-    dispenseFoodWithReport("remote", commandId);
-    success = true;
+    
+    // Check if it's raining
+    if (rainDetected) {
+      Serial.println("[MQTT] ! Cannot dispense food: It's raining !");
+      success = false;
+    } else {
+      dispenseFoodWithReport("remote", commandId);
+      success = true;
+    }
   } 
   else if (strcmp(command, "dispense_water") == 0) {
     Serial.println("[MQTT] Executing remote water dispense...");
-    dispenseWaterWithReport("remote", commandId);
-    success = true;
+    
+    // Check if it's raining
+    if (rainDetected) {
+      Serial.println("[MQTT] ! Cannot dispense water: It's raining !");
+      success = false;
+    } else {
+      dispenseWaterWithReport("remote", commandId);
+      success = true;
+    }
   }
   else if (strcmp(command, "calibrate") == 0) {
     Serial.println("[MQTT] Executing scale calibration...");
@@ -488,6 +502,14 @@ void checkManualButtons() {
     delay(BUTTON_DEBOUNCE_MS); // Debounce
     if (digitalRead(PIN_BUTTON_FOOD) == LOW) { // Confirm still pressed
       Serial.println("\n[MANUAL] Food button pressed!");
+      
+      // Check if it's raining
+      if (rainDetected) {
+        Serial.println("[MANUAL] ! Cannot dispense food: It's raining !");
+        lastFoodButtonState = currentFoodButton;  // Update state to prevent repeated messages
+        return;
+      }
+      
       dispenseFoodWithReport("manual", NULL);
       lastFoodDispenseTime = millis(); // Update cooldown
       lastFoodButtonPress = millis();
@@ -505,9 +527,17 @@ void checkManualButtons() {
     if (digitalRead(PIN_BUTTON_WATER) == LOW) { // Confirm still pressed
       Serial.println("\n[MANUAL] Water button pressed!");
       
+      // Check if it's raining
+      if (rainDetected) {
+        Serial.println("[MANUAL] ! Cannot dispense water: It's raining !");
+        lastWaterButtonState = currentWaterButton;  // Update state to prevent repeated messages
+        return;
+      }
+      
       // Check water level before dispensing (skip if bypassed for testing)
       if (!BYPASS_WATER_LEVEL_SENSOR && digitalRead(PIN_WATER_LEVEL) == HIGH) {
         Serial.println("[MANUAL] ! Cannot dispense: Water tank empty !");
+        lastWaterButtonState = currentWaterButton;  // Update state to prevent repeated messages
         return;
       }
       
@@ -525,6 +555,11 @@ void checkManualButtons() {
 void checkFoodDispenser() {
   // Only dispense if cooldown period has passed
   if (millis() - lastFoodDispenseTime < PIR_COOLDOWN_MS) {
+    return;
+  }
+
+  // Don't dispense food if it's raining
+  if (rainDetected) {
     return;
   }
 
@@ -651,10 +686,7 @@ void checkRainSensor() {
     return;
   }
   
-  static unsigned long lastRainCheck = 0;
-  if (millis() - lastRainCheck < 5000) return; // Check every 5 seconds
-  lastRainCheck = millis();
-
+  // Read rain sensor value on every call for instant updates
   int rainValue = analogRead(PIN_RAIN_ANALOG);
   bool wasRaining = rainDetected;
   
@@ -670,7 +702,13 @@ void checkRainSensor() {
                   rainDetected ? "RAINING" : "DRY", rainValue);
     if (rainDetected) {
       Serial.println("[RAIN] Water dispensing disabled during rain");
+    } else {
+      Serial.println("[RAIN] Weather cleared - dispensing enabled");
     }
+    
+    // Immediately send telemetry update when rain status changes
+    Serial.println("[RAIN] Sending instant telemetry update...");
+    sendTelemetry();
   }
 }
 

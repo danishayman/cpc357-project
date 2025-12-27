@@ -276,7 +276,7 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <button
               onClick={() => sendCommand('dispense_food')}
-              disabled={!isOnline || commandLoading !== null}
+              disabled={!isOnline || commandLoading !== null || isRaining}
               className="w-full py-4 px-6 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
             >
               {commandLoading === 'dispense_food' ? (
@@ -288,7 +288,7 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => sendCommand('dispense_water')}
-              disabled={!isOnline || commandLoading !== null}
+              disabled={!isOnline || commandLoading !== null || isRaining}
               className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-medium rounded-xl transition flex items-center justify-center gap-2"
             >
               {commandLoading === 'dispense_water' ? (
@@ -302,6 +302,12 @@ export default function DashboardPage() {
           {!isOnline && (
             <p className="text-sm text-red-400 mt-4 text-center">
               Device is offline. Commands unavailable.
+            </p>
+          )}
+          {isRaining && (
+            <p className="text-sm text-yellow-400 mt-4 text-center flex items-center justify-center gap-2">
+              <CloudRain className="w-4 h-4" />
+              Dispensing disabled during rain
             </p>
           )}
         </div>
