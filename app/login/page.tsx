@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+
 
 /**
  * Login Page - Outdoor Daylight Theme
@@ -120,16 +120,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Sign Up Link */}
-        <p className="text-center text-stone-600 text-sm">
-          Don&apos;t have an account?{' '}
-          <Link
-            href="/signup"
-            className="text-cyan-700 hover:text-cyan-800 font-semibold underline underline-offset-2"
-          >
-            Sign up
-          </Link>
-        </p>
+
       </div>
     </div>
   )

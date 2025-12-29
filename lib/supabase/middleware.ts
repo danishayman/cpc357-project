@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = ['/dashboard', '/api/commands']
-  const isProtectedPath = protectedPaths.some(path => 
+  const isProtectedPath = protectedPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
 
@@ -44,9 +44,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged-in users from login/signup to dashboard
-  const authPaths = ['/login', '/signup']
-  const isAuthPath = authPaths.some(path => 
+  // Redirect logged-in users from login to dashboard
+  const authPaths = ['/login']
+  const isAuthPath = authPaths.some(path =>
     request.nextUrl.pathname === path
   )
 

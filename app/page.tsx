@@ -36,19 +36,13 @@ export default async function Home() {
           Keep track of food levels, water status, and feeding events in real-time.
         </p>
 
-        {/* CTA Buttons - Touch-friendly with minimum 48px height */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        {/* CTA Button - Touch-friendly with minimum 48px height */}
+        <div className="flex justify-center">
           <Link
             href="/login"
             className="px-8 py-4 min-h-[48px] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold rounded-xl transition-colors duration-150 shadow-sm hover:shadow-md flex items-center justify-center"
           >
             Sign In
-          </Link>
-          <Link
-            href="/signup"
-            className="px-8 py-4 min-h-[48px] bg-white hover:bg-stone-100 active:bg-stone-200 text-stone-800 font-semibold rounded-xl transition-colors duration-150 border-2 border-stone-300 hover:border-stone-400 flex items-center justify-center"
-          >
-            Create Account
           </Link>
         </div>
 
