@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { DashboardSkeleton } from '@/app/components/Skeleton'
 import {
   Droplets,
   Beef,
@@ -140,16 +141,9 @@ export default function DashboardPage() {
     router.refresh()
   }
 
-  // Loading State - Light theme
+  // Loading State - Skeleton UI
   if (loading) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-stone-200 border-t-emerald-600"></div>
-          <p className="text-stone-600 font-medium">Loading dashboard...</p>
-        </div>
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   const isOnline = deviceStatus?.is_online ?? false
@@ -231,8 +225,8 @@ export default function DashboardPage() {
 
         {/* ========== DEVICE STATUS BANNER ========== */}
         <div className={`mb-6 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isOnline
-            ? 'bg-emerald-50 border-2 border-emerald-200'
-            : 'bg-red-50 border-2 border-red-200'
+          ? 'bg-emerald-50 border-2 border-emerald-200'
+          : 'bg-red-50 border-2 border-red-200'
           }`}>
           <div className="flex items-center gap-3">
             {isOnline ? (
@@ -482,8 +476,8 @@ export default function DashboardPage() {
                       </td>
                       <td className="py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${event.event_type === 'food'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-cyan-100 text-cyan-700'
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-cyan-100 text-cyan-700'
                           }`}>
                           {event.event_type === 'food' ? <Beef className="w-3 h-3" /> : <Droplets className="w-3 h-3" />}
                           {event.event_type}
@@ -491,10 +485,10 @@ export default function DashboardPage() {
                       </td>
                       <td className="py-3">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${event.trigger_source === 'remote'
-                            ? 'bg-violet-100 text-violet-700'
-                            : event.trigger_source === 'pir'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-stone-100 text-stone-600'
+                          ? 'bg-violet-100 text-violet-700'
+                          : event.trigger_source === 'pir'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-stone-100 text-stone-600'
                           }`}>
                           {event.trigger_source}
                         </span>
