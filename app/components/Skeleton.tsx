@@ -7,11 +7,11 @@
  * Uses the stone color palette from the Outdoor Daylight Theme.
  */
 
-// Base skeleton with pulse animation
+// Base skeleton with breathing animation
 export function Skeleton({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
     return (
         <div
-            className={`animate-pulse bg-stone-200 rounded ${className}`}
+            className={`skeleton-breathing skeleton-shimmer rounded ${className}`}
             style={style}
             aria-hidden="true"
         />
