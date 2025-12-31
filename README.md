@@ -161,7 +161,7 @@ Before setting up the project, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/cpc357-project.git
+git clone https://github.com/danishayman/cpc357-project.git
 cd cpc357-project
 ```
 
