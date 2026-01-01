@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { DashboardSkeleton } from '@/app/components/Skeleton'
+import { StatisticsCard } from '@/app/components/StatisticsCard'
+import { ActivityHeatmap } from '@/app/components/ActivityHeatmap'
 import {
   Droplets,
   Beef,
@@ -30,7 +32,7 @@ import {
   AreaChart,
   Area
 } from 'recharts'
-import type { SensorReading, DispenseEvent, DeviceStatus } from '@/lib/types/database'
+import type { SensorReading, DispenseEvent, DeviceStatus, StatisticsResponse } from '@/lib/types/database'
 
 /**
  * Dashboard Page - Outdoor Daylight Theme
@@ -52,6 +54,7 @@ export default function DashboardPage() {
   const [sensorHistory, setSensorHistory] = useState<SensorReading[]>([])
   const [commandLoading, setCommandLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [statistics, setStatistics] = useState<StatisticsResponse | null>(null)
 
   const router = useRouter()
   const supabase = createClient()
@@ -69,6 +72,13 @@ export default function DashboardPage() {
       setRecentEvents(data.recentEvents)
       setSensorHistory(data.sensorHistory)
       setError(null)
+
+      // Fetch statistics data
+      const statsResponse = await fetch('/api/statistics')
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json()
+        setStatistics(statsData)
+      }
     } catch (err) {
       setError('Failed to fetch data')
       console.error(err)
@@ -335,6 +345,12 @@ export default function DashboardPage() {
             <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{recentEvents.length}</p>
             <p className="text-sm text-stone-500 mt-3">Dispense events</p>
           </div>
+        </div>
+
+        {/* ========== STATISTICS & HEATMAP ROW ========== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <StatisticsCard data={statistics} />
+          <ActivityHeatmap data={statistics?.heatmapData} />
         </div>
 
         {/* ========== CONTROL BUTTONS & CHART ROW ========== */}

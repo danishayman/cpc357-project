@@ -47,3 +47,21 @@ export type DailyDispenseSummary = {
   total_events: number
   total_amount: number | null
 }
+
+export type StatisticsSummary = {
+  foodEvents: number
+  waterEvents: number
+  totalFoodDispensed: number
+}
+
+export type HeatmapCell = {
+  day: number    // 0-6 (Sunday-Saturday)
+  hour: number   // 0-23
+  count: number  // PIR trigger count
+}
+
+export type StatisticsResponse = {
+  daily: StatisticsSummary
+  weekly: StatisticsSummary
+  heatmapData: HeatmapCell[]
+}
