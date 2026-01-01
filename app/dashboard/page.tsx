@@ -23,7 +23,8 @@ import {
   AlertTriangle,
   Sun,
   Bell,
-  Settings
+  Settings,
+  MapPin
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
@@ -392,9 +393,16 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {/* Remote Control Panel */}
           <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-            <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-2 flex items-center gap-2">
               <span aria-hidden="true">🎮</span> Remote Control
             </h2>
+            {/* Device Location Name */}
+            {devices.find(d => d.device_id === selectedDeviceId)?.location_name && (
+              <p className="text-sm text-stone-500 mb-4 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-red-500" />
+                {devices.find(d => d.device_id === selectedDeviceId)?.location_name}
+              </p>
+            )}
             <div className="space-y-3 sm:space-y-4">
               {/* Dispense Food Button */}
               <button

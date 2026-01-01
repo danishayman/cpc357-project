@@ -112,10 +112,21 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
 
     return (
         <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-            <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-violet-600" />
                 Device Locations
             </h2>
+            {/* Color Legend */}
+            <div className="flex items-center gap-4 mb-3 text-sm text-stone-600">
+                <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
+                    <span>Current feeder</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-sm"></div>
+                    <span>Other feeder</span>
+                </div>
+            </div>
             <div className="h-64 rounded-lg overflow-hidden">
                 <MapContainer
                     center={center}
