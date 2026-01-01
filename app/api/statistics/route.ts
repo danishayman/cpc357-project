@@ -11,34 +11,41 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get device_id from query params
+    // Get params from query
     const { searchParams } = new URL(request.url)
     const deviceId = searchParams.get('device_id') || 'esp32-feeder-01'
+    const scope = searchParams.get('scope') || 'device' // 'device' or 'all'
 
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString()
 
-    // Get daily dispense statistics for this device
-    const { data: dailyEvents } = await supabase
+    // Build queries based on scope
+    let dailyEventsQuery = supabase
         .from('dispense_events')
         .select('event_type, amount_dispensed')
-        .eq('device_id', deviceId)
         .gte('created_at', todayStart)
 
-    // Get weekly dispense statistics for this device
-    const { data: weeklyEvents } = await supabase
+    let weeklyEventsQuery = supabase
         .from('dispense_events')
         .select('event_type, amount_dispensed')
-        .eq('device_id', deviceId)
         .gte('created_at', weekStart)
 
-    // Get PIR activity for heatmap (last 7 days) for this device
-    const { data: pirReadings } = await supabase
+    let pirReadingsQuery = supabase
         .from('sensor_readings')
         .select('food_pir_triggered, water_pir_triggered, created_at')
-        .eq('device_id', deviceId)
         .gte('created_at', weekStart)
+
+    // Filter by device if not 'all' scope
+    if (scope !== 'all') {
+        dailyEventsQuery = dailyEventsQuery.eq('device_id', deviceId)
+        weeklyEventsQuery = weeklyEventsQuery.eq('device_id', deviceId)
+        pirReadingsQuery = pirReadingsQuery.eq('device_id', deviceId)
+    }
+
+    const { data: dailyEvents } = await dailyEventsQuery
+    const { data: weeklyEvents } = await weeklyEventsQuery
+    const { data: pirReadings } = await pirReadingsQuery
 
     // Calculate daily summary
     const daily: StatisticsSummary = {

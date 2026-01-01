@@ -462,7 +462,7 @@ export default function DashboardPage() {
 
         {/* ========== STATISTICS & HEATMAP ROW ========== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <StatisticsCard data={statistics} />
+          <StatisticsCard selectedDeviceId={selectedDeviceId} initialData={statistics} />
           <ActivityHeatmap data={statistics?.heatmapData} />
         </div>
 
