@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { MapPin, Wifi, WifiOff } from 'lucide-react'
 import type { Device } from '@/lib/types/database'
+import 'leaflet/dist/leaflet.css'
 
 type DeviceWithStatus = Device & {
     is_online: boolean
@@ -33,9 +34,6 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
             setMarker(() => mod.Marker)
             setPopup(() => mod.Popup)
         })
-
-        // Import Leaflet CSS
-        import('leaflet/dist/leaflet.css')
 
         // Fix default marker icon issue and store L reference
         import('leaflet').then((leaflet) => {

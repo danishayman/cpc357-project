@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { MapPin, Crosshair } from 'lucide-react'
+import 'leaflet/dist/leaflet.css'
 
 type Props = {
     latitude: number | null
@@ -30,7 +31,6 @@ export function MapPicker({ latitude, longitude, onLocationChange }: Props) {
         Promise.all([
             import('react-leaflet'),
             import('leaflet'),
-            import('leaflet/dist/leaflet.css')
         ]).then(([reactLeaflet, leaflet]) => {
             setMapContainer(() => reactLeaflet.MapContainer)
             setTileLayer(() => reactLeaflet.TileLayer)
