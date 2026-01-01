@@ -1,5 +1,84 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { sendAlertEmail } from '@/lib/email'
+
+// Check thresholds and send alerts if needed
+async function checkAndSendAlerts(
+  supabase: ReturnType<typeof createAdminClient>,
+  sensorData: {
+    food_weight?: number
+    water_level_ok?: boolean
+    device_id?: string
+  }
+) {
+  try {
+    // Get all users with email enabled
+    const { data: allSettings } = await supabase
+      .from('notification_settings')
+      .select('user_id, email_enabled, food_low_threshold, water_low_enabled')
+      .eq('email_enabled', true)
+
+    if (!allSettings || allSettings.length === 0) return
+
+    for (const settings of allSettings) {
+      const recipientsResult = await supabase
+        .from('notification_recipients')
+        .select('email')
+        .eq('user_id', settings.user_id)
+
+      const recipients = recipientsResult.data || []
+      if (recipients.length === 0) continue
+
+      const recipientEmails = recipients.map((r: { email: string }) => r.email)
+
+      // Check food threshold
+      if (
+        sensorData.food_weight !== undefined &&
+        sensorData.food_weight < (settings.food_low_threshold || 200)
+      ) {
+        await sendAlertEmail({
+          alertType: 'food_low',
+          recipientEmails,
+          details: {
+            currentValue: sensorData.food_weight,
+            threshold: settings.food_low_threshold || 200,
+            deviceId: sensorData.device_id,
+          },
+        })
+
+        // Log alert
+        await supabase.from('alert_history').insert({
+          user_id: settings.user_id,
+          alert_type: 'food_low',
+          message: `Food level (${sensorData.food_weight}g) below threshold (${settings.food_low_threshold}g)`,
+          email_sent: true,
+        })
+      }
+
+      // Check water level
+      if (
+        settings.water_low_enabled &&
+        sensorData.water_level_ok === false
+      ) {
+        await sendAlertEmail({
+          alertType: 'water_low',
+          recipientEmails,
+          details: { deviceId: sensorData.device_id },
+        })
+
+        // Log alert
+        await supabase.from('alert_history').insert({
+          user_id: settings.user_id,
+          alert_type: 'water_low',
+          message: 'Water tank is empty',
+          email_sent: true,
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error checking/sending alerts:', error)
+  }
+}
 
 // This endpoint is called by GCP Cloud Function to insert sensor data
 // It uses the service role key for authentication
@@ -47,6 +126,13 @@ export async function POST(request: NextRequest) {
           firmware_version: data.firmware_version,
           updated_at: new Date().toISOString(),
         })
+
+      // Check thresholds and send alerts (async, don't wait)
+      checkAndSendAlerts(supabase, {
+        food_weight: data.food_weight,
+        water_level_ok: data.water_level_ok,
+        device_id: data.device_id || 'esp32-feeder-01',
+      })
 
       return NextResponse.json({ success: true })
     }
