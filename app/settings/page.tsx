@@ -256,7 +256,7 @@ export default function SettingsPage() {
                                         value={editLocationName}
                                         onChange={(e) => setEditLocationName(e.target.value)}
                                         className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none transition-colors"
-                                        placeholder="e.g., Community Park North"
+                                        placeholder="e.g., Dewan Tunku Syed Putra"
                                     />
                                 </div>
 
