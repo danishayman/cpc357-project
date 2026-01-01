@@ -388,30 +388,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ========== STATISTICS & HEATMAP ROW ========== */}
+        {/* ========== REMOTE CONTROL & MAP VIEW ROW ========== */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <StatisticsCard data={statistics} />
-          <ActivityHeatmap data={statistics?.heatmapData} />
-        </div>
-
-        {/* ========== MAP VIEW ========== */}
-        {devices.length > 0 && (
-          <div className="mb-6 sm:mb-8">
-            <MapView
-              devices={devices}
-              selectedDeviceId={selectedDeviceId}
-              onSelect={(id) => {
-                setSelectedDeviceId(id)
-                setLoading(true)
-              }}
-            />
-          </div>
-        )}
-
-        {/* ========== CONTROL BUTTONS & CHART ROW ========== */}
-        {/* Responsive: Stack on mobile, side-by-side on larger screens */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-
           {/* Remote Control Panel */}
           <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
             <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
@@ -461,8 +439,30 @@ export default function DashboardPage() {
             )}
           </div>
 
+          {/* Device Locations Map */}
+          {devices.length > 0 && (
+            <MapView
+              devices={devices}
+              selectedDeviceId={selectedDeviceId}
+              onSelect={(id) => {
+                setSelectedDeviceId(id)
+                setLoading(true)
+              }}
+            />
+          )}
+        </div>
+
+        {/* ========== STATISTICS & HEATMAP ROW ========== */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <StatisticsCard data={statistics} />
+          <ActivityHeatmap data={statistics?.heatmapData} />
+        </div>
+
+        {/* ========== CHART SECTION ========== */}
+        <div className="mb-6 sm:mb-8">
           {/* Food Weight Chart */}
-          <div className="lg:col-span-2 bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+
             <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4">
               📊 Food Weight History (24h)
             </h2>

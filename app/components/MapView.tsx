@@ -22,6 +22,8 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
     const [Popup, setPopup] = useState<any>(null)
     const [isClient, setIsClient] = useState(false)
 
+    const [L, setL] = useState<any>(null)
+
     // Dynamically import Leaflet only on client side
     useEffect(() => {
         setIsClient(true)
@@ -35,16 +37,37 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
         // Import Leaflet CSS
         import('leaflet/dist/leaflet.css')
 
-        // Fix default marker icon issue
-        import('leaflet').then((L) => {
-            delete (L.Icon.Default.prototype as any)._getIconUrl
-            L.Icon.Default.mergeOptions({
+        // Fix default marker icon issue and store L reference
+        import('leaflet').then((leaflet) => {
+            setL(() => leaflet.default || leaflet)
+            delete ((leaflet.Icon?.Default?.prototype || (leaflet.default?.Icon?.Default?.prototype)) as any)?._getIconUrl
+            const Icon = leaflet.Icon || leaflet.default?.Icon
+            Icon?.Default?.mergeOptions({
                 iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
                 iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
             })
         })
     }, [])
+
+    // Create custom icons
+    const createIcon = (isSelected: boolean) => {
+        if (!L) return undefined
+        return L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="
+                width: 24px;
+                height: 24px;
+                background-color: ${isSelected ? '#ef4444' : '#6366f1'};
+                border: 3px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            "></div>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+            popupAnchor: [0, -12],
+        })
+    }
 
     // Filter devices with valid coordinates
     const devicesWithCoords = devices.filter(d => d.latitude && d.longitude)
@@ -103,37 +126,42 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    {devicesWithCoords.map((device) => (
-                        <Marker
-                            key={device.device_id}
-                            position={[device.latitude!, device.longitude!]}
-                            eventHandlers={{
-                                click: () => onSelect(device.device_id),
-                            }}
-                        >
-                            <Popup>
-                                <div className="text-center">
-                                    <p className="font-medium">{device.name}</p>
-                                    {device.location_name && (
-                                        <p className="text-xs text-gray-500">{device.location_name}</p>
-                                    )}
-                                    <div className="flex items-center justify-center gap-1 mt-1">
-                                        {device.is_online ? (
-                                            <>
-                                                <Wifi className="w-3 h-3 text-emerald-500" />
-                                                <span className="text-xs text-emerald-600">Online</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <WifiOff className="w-3 h-3 text-red-500" />
-                                                <span className="text-xs text-red-600">Offline</span>
-                                            </>
+                    {devicesWithCoords.map((device) => {
+                        const isSelected = device.device_id === selectedDeviceId
+                        const icon = createIcon(isSelected)
+                        return (
+                            <Marker
+                                key={device.device_id}
+                                position={[device.latitude!, device.longitude!]}
+                                icon={icon}
+                                eventHandlers={{
+                                    click: () => onSelect(device.device_id),
+                                }}
+                            >
+                                <Popup>
+                                    <div className="text-center">
+                                        <p className="font-medium">{device.name}</p>
+                                        {device.location_name && (
+                                            <p className="text-xs text-gray-500">{device.location_name}</p>
                                         )}
+                                        <div className="flex items-center justify-center gap-1 mt-1">
+                                            {device.is_online ? (
+                                                <>
+                                                    <Wifi className="w-3 h-3 text-emerald-500" />
+                                                    <span className="text-xs text-emerald-600">Online</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <WifiOff className="w-3 h-3 text-red-500" />
+                                                    <span className="text-xs text-red-600">Offline</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </Popup>
-                        </Marker>
-                    ))}
+                                </Popup>
+                            </Marker>
+                        )
+                    })}
                 </MapContainer>
             </div>
         </div>
