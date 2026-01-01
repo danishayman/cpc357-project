@@ -80,12 +80,12 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
 
     if (!isClient || !MapContainer || !TileLayer || !Marker || !Popup) {
         return (
-            <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-                <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-violet-600" />
+            <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+                <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                     Device Locations
                 </h2>
-                <div className="h-64 bg-stone-100 rounded-lg flex items-center justify-center">
+                <div className="h-48 sm:h-56 md:h-64 bg-stone-100 rounded-lg flex items-center justify-center">
                     <p className="text-stone-400">Loading map...</p>
                 </div>
             </div>
@@ -94,38 +94,38 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
 
     if (devicesWithCoords.length === 0) {
         return (
-            <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-                <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-violet-600" />
+            <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+                <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                     Device Locations
                 </h2>
-                <div className="h-64 bg-stone-100 rounded-lg flex flex-col items-center justify-center">
-                    <MapPin className="w-12 h-12 text-stone-300 mb-2" />
-                    <p className="text-stone-400">No device locations configured</p>
-                    <p className="text-sm text-stone-300">Add GPS coordinates to your devices to see them on the map</p>
+                <div className="h-48 sm:h-56 md:h-64 bg-stone-100 rounded-lg flex flex-col items-center justify-center px-4 text-center">
+                    <MapPin className="w-10 h-10 sm:w-12 sm:h-12 text-stone-300 mb-2" />
+                    <p className="text-stone-400 text-sm sm:text-base">No device locations configured</p>
+                    <p className="text-xs sm:text-sm text-stone-300 mt-1">Add GPS coordinates to your devices to see them on the map</p>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-            <h2 className="text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-violet-600" />
+        <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+            <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                 Device Locations
             </h2>
             {/* Color Legend */}
-            <div className="flex items-center gap-4 mb-3 text-sm text-stone-600">
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-3 text-xs sm:text-sm text-stone-600">
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
                     <span>Current feeder</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-sm"></div>
+                <div className="flex items-center gap-1 sm:gap-1.5">
+                    <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-indigo-500 border-2 border-white shadow-sm"></div>
                     <span>Other feeder</span>
                 </div>
             </div>
-            <div className="h-64 rounded-lg overflow-hidden">
+            <div className="h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden">
                 <MapContainer
                     center={center}
                     zoom={12}

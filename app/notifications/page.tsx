@@ -191,9 +191,9 @@ export default function NotificationsPage() {
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
             <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-                <div className="px-4 sm:px-6 lg:px-8 py-4">
+                <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
                     <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             <Link
                                 href="/dashboard"
                                 className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
@@ -202,11 +202,11 @@ export default function NotificationsPage() {
                                 <ArrowLeft className="w-5 h-5 text-stone-600" />
                             </Link>
                             <div>
-                                <h1 className="text-xl sm:text-2xl font-bold text-stone-800 flex items-center gap-2">
-                                    <Bell className="w-6 h-6 text-violet-600" />
+                                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-stone-800 flex items-center gap-2">
+                                    <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
                                     Notifications
                                 </h1>
-                                <p className="text-stone-500 text-sm mt-0.5 hidden sm:block">
+                                <p className="text-stone-500 text-xs sm:text-sm mt-0.5 hidden sm:block">
                                     Configure email alerts and view notification history
                                 </p>
                             </div>
@@ -216,7 +216,7 @@ export default function NotificationsPage() {
             </header>
 
             {/* Main Content */}
-            <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-4xl mx-auto">
+            <main className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-4xl mx-auto">
                 {/* Error Alert */}
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 flex items-center gap-3">
@@ -234,9 +234,9 @@ export default function NotificationsPage() {
                 )}
 
                 {/* Settings Card */}
-                <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm mb-6">
-                    <h2 className="text-lg font-bold text-stone-800 mb-6 flex items-center gap-2">
-                        <Mail className="w-5 h-5 text-violet-600" />
+                <div className="bg-white rounded-xl p-4 sm:p-6 border border-stone-200 shadow-sm mb-4 sm:mb-6">
+                    <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-4 sm:mb-6 flex items-center gap-2">
+                        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                         Email Alert Settings
                     </h2>
 
@@ -300,34 +300,34 @@ export default function NotificationsPage() {
                     </div>
 
                     {/* Master Toggle */}
-                    <div className="flex items-center justify-between py-4 border-b border-stone-100">
-                        <div>
-                            <p className="font-medium text-stone-800">Enable Email Notifications</p>
-                            <p className="text-sm text-stone-500">Receive alerts via email</p>
+                    <div className="flex items-center justify-between py-3 sm:py-4 border-b border-stone-100 gap-3">
+                        <div className="flex-1 min-w-0">
+                            <p className="font-medium text-stone-800 text-sm sm:text-base">Enable Email Notifications</p>
+                            <p className="text-xs sm:text-sm text-stone-500">Receive alerts via email</p>
                         </div>
                         <button
                             onClick={() => setSettings({ ...settings, email_enabled: !settings.email_enabled })}
-                            className={`relative w-12 h-6 rounded-full transition-colors ${settings.email_enabled ? 'bg-violet-600' : 'bg-stone-300'
+                            className={`relative w-11 h-6 sm:w-12 rounded-full transition-colors flex-shrink-0 ${settings.email_enabled ? 'bg-violet-600' : 'bg-stone-300'
                                 }`}
                         >
                             <span
-                                className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.email_enabled ? 'translate-x-6' : 'translate-x-0'
+                                className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.email_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-0'
                                     }`}
                             />
                         </button>
                     </div>
 
                     {/* Food Low Threshold */}
-                    <div className="py-4 border-b border-stone-100">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                                    <Scale className="w-5 h-5 text-amber-600" />
+                    <div className="py-3 sm:py-4 border-b border-stone-100">
+                        <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <Scale className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-stone-800">Low Food Alert</p>
-                                    <p className="text-sm text-stone-500">
-                                        Alert when food drops below {settings.food_low_threshold}g
+                                    <p className="font-medium text-stone-800 text-sm sm:text-base">Low Food Alert</p>
+                                    <p className="text-xs sm:text-sm text-stone-500">
+                                        Alert below {settings.food_low_threshold}g
                                     </p>
                                 </div>
                             </div>
@@ -341,7 +341,7 @@ export default function NotificationsPage() {
                             onChange={(e) => setSettings({ ...settings, food_low_threshold: Number(e.target.value) })}
                             className="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
                         />
-                        <div className="flex justify-between text-xs text-stone-400 mt-1">
+                        <div className="flex justify-between text-[10px] sm:text-xs text-stone-400 mt-1">
                             <span>100g</span>
                             <span className="font-medium text-amber-600">{settings.food_low_threshold}g</span>
                             <span>500g</span>
@@ -349,46 +349,46 @@ export default function NotificationsPage() {
                     </div>
 
                     {/* Water Low Toggle */}
-                    <div className="flex items-center justify-between py-4 border-b border-stone-100">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
-                                <Droplets className="w-5 h-5 text-cyan-600" />
+                    <div className="flex items-center justify-between py-3 sm:py-4 border-b border-stone-100 gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
                             </div>
                             <div>
-                                <p className="font-medium text-stone-800">Low Water Alert</p>
-                                <p className="text-sm text-stone-500">Alert when water tank is empty</p>
+                                <p className="font-medium text-stone-800 text-sm sm:text-base">Low Water Alert</p>
+                                <p className="text-xs sm:text-sm text-stone-500">Alert when tank is empty</p>
                             </div>
                         </div>
                         <button
                             onClick={() => setSettings({ ...settings, water_low_enabled: !settings.water_low_enabled })}
-                            className={`relative w-12 h-6 rounded-full transition-colors ${settings.water_low_enabled ? 'bg-cyan-600' : 'bg-stone-300'
+                            className={`relative w-11 h-6 sm:w-12 rounded-full transition-colors flex-shrink-0 ${settings.water_low_enabled ? 'bg-cyan-600' : 'bg-stone-300'
                                 }`}
                         >
                             <span
-                                className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.water_low_enabled ? 'translate-x-6' : 'translate-x-0'
+                                className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.water_low_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-0'
                                     }`}
                             />
                         </button>
                     </div>
 
                     {/* Device Offline Toggle */}
-                    <div className="flex items-center justify-between py-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                <Wifi className="w-5 h-5 text-red-600" />
+                    <div className="flex items-center justify-between py-3 sm:py-4 gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                             </div>
                             <div>
-                                <p className="font-medium text-stone-800">Device Offline Alert</p>
-                                <p className="text-sm text-stone-500">Alert when feeder goes offline</p>
+                                <p className="font-medium text-stone-800 text-sm sm:text-base">Device Offline Alert</p>
+                                <p className="text-xs sm:text-sm text-stone-500">Alert when feeder goes offline</p>
                             </div>
                         </div>
                         <button
                             onClick={() => setSettings({ ...settings, device_offline_enabled: !settings.device_offline_enabled })}
-                            className={`relative w-12 h-6 rounded-full transition-colors ${settings.device_offline_enabled ? 'bg-red-600' : 'bg-stone-300'
+                            className={`relative w-11 h-6 sm:w-12 rounded-full transition-colors flex-shrink-0 ${settings.device_offline_enabled ? 'bg-red-600' : 'bg-stone-300'
                                 }`}
                         >
                             <span
-                                className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.device_offline_enabled ? 'translate-x-6' : 'translate-x-0'
+                                className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${settings.device_offline_enabled ? 'translate-x-5 sm:translate-x-6' : 'translate-x-0'
                                     }`}
                             />
                         </button>
@@ -398,7 +398,7 @@ export default function NotificationsPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="w-full mt-6 py-4 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                        className="w-full mt-4 sm:mt-6 py-3 sm:py-4 bg-violet-600 hover:bg-violet-700 disabled:bg-violet-300 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
                         {saving ? (
                             <RefreshCw className="w-5 h-5 animate-spin" />
@@ -410,14 +410,14 @@ export default function NotificationsPage() {
                 </div>
 
                 {/* Alert History */}
-                <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-                    <h2 className="text-lg font-bold text-stone-800 mb-4 flex items-center gap-2">
-                        <Bell className="w-5 h-5 text-stone-500" />
+                <div className="bg-white rounded-xl p-4 sm:p-6 border border-stone-200 shadow-sm">
+                    <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-3 sm:mb-4 flex items-center gap-2">
+                        <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-stone-500" />
                         Alert History
                     </h2>
 
                     {alerts.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                             {alerts.map((alert) => (
                                 <div
                                     key={alert.id}

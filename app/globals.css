@@ -246,3 +246,71 @@ body {
 .grid-cols-24 {
   grid-template-columns: repeat(24, minmax(0, 1fr));
 }
+
+/* ==========================================================================
+   EXTRA SMALL BREAKPOINT (xs: 400px)
+   ========================================================================== */
+
+/* Custom xs breakpoint for very small phones */
+@media (min-width: 400px) {
+  .xs\:inline {
+    display: inline;
+  }
+  .xs\:hidden {
+    display: none;
+  }
+}
+
+/* Hide on xs and below */
+@media (max-width: 399px) {
+  .xs\:hidden {
+    display: inline;
+  }
+  .xs\:inline {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   MOBILE OPTIMIZATIONS
+   ========================================================================== */
+
+/* Prevent text selection on touch interactions */
+.touch-none {
+  touch-action: none;
+}
+
+/* Smooth scrolling for horizontal scroll containers */
+.scroll-smooth-x {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.scroll-smooth-x::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Tap highlight removal for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Ensure minimum touch target size (44x44px) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: max(0px)) {
+  .safe-area-inset-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-inset-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+}

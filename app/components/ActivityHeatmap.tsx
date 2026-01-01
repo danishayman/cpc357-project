@@ -40,66 +40,69 @@ export function ActivityHeatmap({ data }: Props) {
     }
 
     return (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg sm:text-xl font-bold text-stone-800 flex items-center gap-2">
-                    <PawPrint className="w-5 h-5 text-violet-600" />
-                    Animal Activity
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h2 className="text-base sm:text-lg md:text-xl font-bold text-stone-800 flex items-center gap-2">
+                    <PawPrint className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
+                    <span className="hidden xs:inline">Animal Activity</span>
+                    <span className="xs:hidden">Activity</span>
                 </h2>
-                <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+                <span className="text-[10px] sm:text-xs font-medium text-stone-500 bg-stone-100 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                     Last 7 days
                 </span>
             </div>
 
-            {/* Heatmap Container */}
-            <div className="w-full">
-                {/* Hour Labels */}
-                <div className="flex mb-1 ml-8 sm:ml-10">
-                    {HOURS.filter((_, i) => i % 3 === 0).map(hour => (
-                        <div
-                            key={hour}
-                            className="flex-1 text-[10px] sm:text-xs text-stone-400 font-medium"
-                        >
-                            {formatHour(hour)}
+            {/* Heatmap Container - Scrollable on mobile */}
+            <div className="w-full overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="min-w-[320px] sm:min-w-0">
+                    {/* Hour Labels */}
+                    <div className="flex mb-1 ml-8 sm:ml-10">
+                        {HOURS.filter((_, i) => i % 4 === 0).map(hour => (
+                            <div
+                                key={hour}
+                                className="flex-1 text-[9px] sm:text-[10px] md:text-xs text-stone-400 font-medium"
+                            >
+                                {formatHour(hour)}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Grid */}
+                    {DAYS.map((dayLabel, dayIndex) => (
+                        <div key={dayLabel} className="flex items-center mb-0.5">
+                            {/* Day Label */}
+                            <div className="w-8 sm:w-10 text-[9px] sm:text-[10px] md:text-xs text-stone-500 font-medium shrink-0">
+                                {dayLabel}
+                            </div>
+
+                            {/* Hour Cells */}
+                            <div className="flex-1 grid grid-cols-24 gap-[1px]">
+                                {HOURS.map(hour => {
+                                    const count = getCell(dayIndex, hour)
+                                    return (
+                                        <div
+                                            key={hour}
+                                            className={`aspect-square rounded-[1px] sm:rounded-[2px] transition-colors ${getColor(count)}`}
+                                            title={`${dayLabel} ${formatHour(hour)}: ${count} visits`}
+                                        />
+                                    )
+                                })}
+                            </div>
                         </div>
                     ))}
                 </div>
-
-                {/* Grid */}
-                {DAYS.map((dayLabel, dayIndex) => (
-                    <div key={dayLabel} className="flex items-center mb-0.5 sm:mb-1">
-                        {/* Day Label */}
-                        <div className="w-8 sm:w-10 text-[10px] sm:text-xs text-stone-500 font-medium shrink-0">
-                            {dayLabel}
-                        </div>
-
-                        {/* Hour Cells */}
-                        <div className="flex-1 grid grid-cols-24 gap-[1px] sm:gap-0.5">
-                            {HOURS.map(hour => {
-                                const count = getCell(dayIndex, hour)
-                                return (
-                                    <div
-                                        key={hour}
-                                        className={`aspect-square sm:aspect-auto sm:h-6 rounded-[2px] sm:rounded-sm transition-colors ${getColor(count)}`}
-                                        title={`${dayLabel} ${formatHour(hour)}: ${count} visits`}
-                                    />
-                                )
-                            })}
-                        </div>
-                    </div>
-                ))}
             </div>
 
             {/* Legend */}
-            <div className="flex items-center justify-center gap-2 mt-4 text-xs text-stone-500">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4 text-[10px] sm:text-xs text-stone-500">
                 <span>Less</span>
                 <div className="flex gap-0.5">
-                    <div className="w-4 h-4 rounded-sm bg-stone-100" />
-                    <div className="w-4 h-4 rounded-sm bg-violet-200" />
-                    <div className="w-4 h-4 rounded-sm bg-violet-300" />
-                    <div className="w-4 h-4 rounded-sm bg-violet-400" />
-                    <div className="w-4 h-4 rounded-sm bg-violet-500" />
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-stone-100" />
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-violet-200" />
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-violet-300" />
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-violet-400" />
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-sm bg-violet-500" />
                 </div>
                 <span>More</span>
             </div>

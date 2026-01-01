@@ -257,11 +257,12 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-stone-50">
       {/* ========== HEADER ========== */}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
+        <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
+          {/* Mobile: Stack title and actions vertically */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             {/* Title Section */}
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-800 flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center justify-between sm:block">
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-stone-800 flex items-center gap-2 sm:gap-3">
                 <span aria-hidden="true">🐾</span>
                 <span className="hidden sm:inline">Smart Feeder Dashboard</span>
                 <span className="sm:hidden">Dashboard</span>
@@ -269,10 +270,29 @@ export default function DashboardPage() {
               <p className="text-stone-500 text-sm mt-0.5 hidden sm:block">
                 Monitor and control your stray animal feeder
               </p>
+              {/* Mobile-only quick actions */}
+              <div className="flex items-center gap-1 sm:hidden">
+                <button
+                  onClick={fetchData}
+                  className="p-2.5 min-w-[44px] min-h-[44px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-lg text-stone-700 transition-colors flex items-center justify-center"
+                  title="Refresh data"
+                  aria-label="Refresh data"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="p-2.5 min-w-[44px] min-h-[44px] bg-stone-100 hover:bg-red-100 active:bg-red-200 hover:text-red-700 rounded-lg text-stone-700 transition-colors flex items-center justify-center"
+                  title="Log out"
+                  aria-label="Log out"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Action Buttons - Touch-friendly */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
               <DeviceSelector
                 devices={devices}
                 selectedDeviceId={selectedDeviceId}
@@ -283,7 +303,7 @@ export default function DashboardPage() {
               />
               <button
                 onClick={fetchData}
-                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                className="hidden sm:flex p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors items-center justify-center"
                 title="Refresh data"
                 aria-label="Refresh data"
               >
@@ -291,7 +311,7 @@ export default function DashboardPage() {
               </button>
               <Link
                 href="/notifications"
-                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-violet-100 active:bg-violet-200 hover:text-violet-700 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                className="p-2.5 sm:p-3 min-w-[44px] sm:min-w-[48px] min-h-[44px] sm:min-h-[48px] bg-stone-100 hover:bg-violet-100 active:bg-violet-200 hover:text-violet-700 rounded-lg sm:rounded-xl text-stone-700 transition-colors flex items-center justify-center"
                 title="Notifications"
                 aria-label="Notifications"
               >
@@ -299,7 +319,7 @@ export default function DashboardPage() {
               </Link>
               <Link
                 href="/settings"
-                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                className="p-2.5 sm:p-3 min-w-[44px] sm:min-w-[48px] min-h-[44px] sm:min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-lg sm:rounded-xl text-stone-700 transition-colors flex items-center justify-center"
                 title="Settings"
                 aria-label="Settings"
               >
@@ -307,7 +327,7 @@ export default function DashboardPage() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-red-100 active:bg-red-200 hover:text-red-700 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                className="hidden sm:flex p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-red-100 active:bg-red-200 hover:text-red-700 rounded-xl text-stone-700 transition-colors items-center justify-center"
                 title="Log out"
                 aria-label="Log out"
               >
@@ -319,158 +339,158 @@ export default function DashboardPage() {
       </header>
 
       {/* ========== MAIN CONTENT ========== */}
-      <main className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto">
+      <main className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl mx-auto">
 
         {/* Error Alert */}
         {error && (
           <div
-            className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 flex items-center gap-3"
+            className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 flex items-center gap-2 sm:gap-3"
             role="alert"
           >
-            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-            <span className="font-medium">{error}</span>
+            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="font-medium text-sm sm:text-base">{error}</span>
           </div>
         )}
 
         {/* ========== DEVICE STATUS BANNER ========== */}
-        <div className={`mb-6 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isOnline
+        <div className={`mb-4 sm:mb-6 p-3 sm:p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 ${isOnline
           ? 'bg-emerald-50 border-2 border-emerald-200'
           : 'bg-red-50 border-2 border-red-200'
           }`}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isOnline ? (
-              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                <Wifi className="w-5 h-5 text-emerald-600" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Wifi className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
               </div>
             ) : (
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <WifiOff className="w-5 h-5 text-red-600" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <WifiOff className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
               </div>
             )}
             <div>
-              <p className={`font-semibold ${isOnline ? 'text-emerald-800' : 'text-red-800'}`}>
+              <p className={`font-semibold text-sm sm:text-base ${isOnline ? 'text-emerald-800' : 'text-red-800'}`}>
                 Device {isOnline ? 'Online' : 'Offline'}
               </p>
               {deviceStatus?.last_seen && (
-                <p className="text-sm text-stone-600">
+                <p className="text-xs sm:text-sm text-stone-600">
                   Last seen: {formatDistanceToNow(new Date(deviceStatus.last_seen), { addSuffix: true })}
                 </p>
               )}
             </div>
           </div>
           {deviceStatus?.firmware_version && (
-            <span className="text-sm text-stone-500 bg-white/50 px-3 py-1 rounded-full">
+            <span className="text-xs sm:text-sm text-stone-500 bg-white/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full self-start sm:self-auto">
               v{deviceStatus.firmware_version}
             </span>
           )}
         </div>
 
         {/* ========== METRIC CARDS GRID ========== */}
-        {/* Responsive: 1 col (mobile) → 2 col (tablet) → 4 col (desktop) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {/* Responsive: 2 col (mobile) → 2 col (tablet) → 4 col (desktop) */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
 
           {/* Food Weight Card */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                <Scale className="w-6 h-6 text-amber-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-amber-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                <Scale className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
               </div>
-              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs font-medium text-stone-500 bg-stone-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                 Food Level
               </span>
             </div>
-            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{foodWeight.toFixed(0)}g</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-800">{foodWeight.toFixed(0)}g</p>
             {/* Progress Bar */}
-            <div className="mt-3 w-full bg-stone-200 rounded-full h-2.5">
+            <div className="mt-2 sm:mt-3 w-full bg-stone-200 rounded-full h-1.5 sm:h-2.5">
               <div
-                className={`h-2.5 rounded-full transition-all duration-300 ${foodStatus.bg}`}
+                className={`h-1.5 sm:h-2.5 rounded-full transition-all duration-300 ${foodStatus.bg}`}
                 style={{ width: `${Math.min((foodWeight / 1000) * 100, 100)}%` }}
               />
             </div>
-            <p className={`text-sm font-medium mt-2 ${foodStatus.color}`}>
+            <p className={`text-xs sm:text-sm font-medium mt-1.5 sm:mt-2 ${foodStatus.color}`}>
               {foodStatus.text}
             </p>
           </div>
 
           {/* Water Level Card */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-cyan-100 rounded-xl flex items-center justify-center">
-                <Droplets className="w-6 h-6 text-cyan-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-cyan-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                <Droplets className="w-4 h-4 sm:w-6 sm:h-6 text-cyan-600" />
               </div>
-              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs font-medium text-stone-500 bg-stone-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                 Water Level
               </span>
             </div>
-            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{waterOk ? 'OK' : 'LOW'}</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-800">{waterOk ? 'OK' : 'LOW'}</p>
             {/* Status Bar */}
-            <div className={`mt-3 w-full h-2.5 rounded-full ${waterOk ? 'bg-cyan-500' : 'bg-red-500'}`} />
-            <p className={`text-sm font-medium mt-2 ${waterOk ? 'text-cyan-700' : 'text-red-700'}`}>
+            <div className={`mt-2 sm:mt-3 w-full h-1.5 sm:h-2.5 rounded-full ${waterOk ? 'bg-cyan-500' : 'bg-red-500'}`} />
+            <p className={`text-xs sm:text-sm font-medium mt-1.5 sm:mt-2 ${waterOk ? 'text-cyan-700' : 'text-red-700'}`}>
               {waterOk ? 'Water tank has water' : 'Water tank empty!'}
             </p>
           </div>
 
           {/* Weather Card */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isRaining ? 'bg-blue-100' : 'bg-amber-100'
+          <div className="bg-white rounded-xl p-3 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${isRaining ? 'bg-blue-100' : 'bg-amber-100'
                 }`}>
                 {isRaining ? (
-                  <CloudRain className="w-6 h-6 text-blue-600" />
+                  <CloudRain className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
                 ) : (
-                  <Sun className="w-6 h-6 text-amber-600" />
+                  <Sun className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />
                 )}
               </div>
-              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs font-medium text-stone-500 bg-stone-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                 Weather
               </span>
             </div>
-            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">
+            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-800">
               {isRaining ? 'Raining' : 'Dry'}
             </p>
-            <p className="text-sm text-stone-500 mt-3">Sensor value: {rainValue}</p>
+            <p className="text-xs sm:text-sm text-stone-500 mt-2 sm:mt-3">Sensor value: {rainValue}</p>
           </div>
 
           {/* Activity Card */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-violet-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+            <div className="flex items-center justify-between mb-2 sm:mb-4">
+              <div className="w-9 h-9 sm:w-12 sm:h-12 bg-violet-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+                <Activity className="w-4 h-4 sm:w-6 sm:h-6 text-violet-600" />
               </div>
-              <span className="text-xs font-medium text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">
+              <span className="text-[10px] sm:text-xs font-medium text-stone-500 bg-stone-100 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                 Today
               </span>
             </div>
-            <p className="text-3xl sm:text-4xl font-extrabold text-stone-800">{recentEvents.length}</p>
-            <p className="text-sm text-stone-500 mt-3">Dispense events</p>
+            <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-800">{recentEvents.length}</p>
+            <p className="text-xs sm:text-sm text-stone-500 mt-2 sm:mt-3">Dispense events</p>
           </div>
         </div>
 
         {/* ========== REMOTE CONTROL & MAP VIEW ROW ========== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
           {/* Remote Control Panel */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-            <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-2 flex items-center gap-2">
+          <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-stone-800 mb-1 sm:mb-2 flex items-center gap-2">
               <span aria-hidden="true">🎮</span> Remote Control
             </h2>
             {/* Device Location Name */}
             {devices.find(d => d.device_id === selectedDeviceId)?.location_name && (
-              <p className="text-sm text-stone-500 mb-4 flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-red-500" />
+              <p className="text-xs sm:text-sm text-stone-500 mb-3 sm:mb-4 flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
                 {devices.find(d => d.device_id === selectedDeviceId)?.location_name}
               </p>
             )}
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-2 sm:space-y-3 md:space-y-4">
               {/* Dispense Food Button */}
               <button
                 onClick={() => sendCommand('dispense_food')}
                 disabled={!isOnline || commandLoading !== null || isRaining}
-                className="w-full py-4 px-6 min-h-[56px] bg-amber-500 hover:bg-amber-600 active:bg-amber-700 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-3 sm:py-4 px-4 sm:px-6 min-h-[48px] sm:min-h-[56px] bg-amber-500 hover:bg-amber-600 active:bg-amber-700 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base"
               >
                 {commandLoading === 'dispense_food' ? (
-                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
-                  <Beef className="w-5 h-5" />
+                  <Beef className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
                 Dispense Food
               </button>
@@ -479,12 +499,12 @@ export default function DashboardPage() {
               <button
                 onClick={() => sendCommand('dispense_water')}
                 disabled={!isOnline || commandLoading !== null || isRaining}
-                className="w-full py-4 px-6 min-h-[56px] bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-3 sm:py-4 px-4 sm:px-6 min-h-[48px] sm:min-h-[56px] bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base"
               >
                 {commandLoading === 'dispense_water' ? (
-                  <RefreshCw className="w-5 h-5 animate-spin" />
+                  <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 ) : (
-                  <Droplets className="w-5 h-5" />
+                  <Droplets className="w-4 h-4 sm:w-5 sm:h-5" />
                 )}
                 Dispense Water
               </button>
@@ -492,13 +512,13 @@ export default function DashboardPage() {
 
             {/* Status Messages */}
             {!isOnline && (
-              <p className="text-sm text-red-600 mt-4 text-center font-medium bg-red-50 py-2 rounded-lg">
+              <p className="text-xs sm:text-sm text-red-600 mt-3 sm:mt-4 text-center font-medium bg-red-50 py-2 rounded-lg">
                 Device is offline. Commands unavailable.
               </p>
             )}
             {isRaining && isOnline && (
-              <p className="text-sm text-amber-700 mt-4 text-center flex items-center justify-center gap-2 font-medium bg-amber-50 py-2 rounded-lg">
-                <CloudRain className="w-4 h-4" />
+              <p className="text-xs sm:text-sm text-amber-700 mt-3 sm:mt-4 text-center flex items-center justify-center gap-1.5 sm:gap-2 font-medium bg-amber-50 py-2 rounded-lg">
+                <CloudRain className="w-3 h-3 sm:w-4 sm:h-4" />
                 Dispensing disabled during rain
               </p>
             )}
@@ -518,50 +538,51 @@ export default function DashboardPage() {
         </div>
 
         {/* ========== STATISTICS & HEATMAP ROW ========== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
           <StatisticsCard selectedDeviceId={selectedDeviceId} initialData={statistics} />
           <ActivityHeatmap data={statistics?.heatmapData} />
         </div>
 
         {/* ========== CHART SECTION ========== */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-6 md:mb-8">
           {/* Food Weight Chart */}
-          <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+          <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
             {/* Header with scope toggle */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-              <h2 className="text-lg sm:text-xl font-bold text-stone-800 flex items-center gap-2">
-                📊 Food Weight History (24h)
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <h2 className="text-sm sm:text-lg md:text-xl font-bold text-stone-800 flex items-center gap-1.5 sm:gap-2">
+                📊 <span className="hidden xs:inline">Food Weight History</span><span className="xs:hidden">History</span> (24h)
                 {historyLoading && (
-                  <span className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                  <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
                 )}
               </h2>
               
               {/* Scope Toggle */}
-              <div className="flex bg-amber-50 rounded-lg p-1">
+              <div className="flex bg-amber-50 rounded-lg p-0.5 sm:p-1">
                 <button
                   onClick={() => setHistoryScope('device')}
-                  className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${historyScope === 'device'
+                  className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1 sm:gap-1.5 ${historyScope === 'device'
                     ? 'bg-white text-amber-700 shadow-sm'
                     : 'text-amber-500 hover:text-amber-700'
                     }`}
                 >
-                  <Scale className="w-4 h-4" />
-                  This Device
+                  <Scale className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">This Device</span>
+                  <span className="xs:hidden">Device</span>
                 </button>
                 <button
                   onClick={() => setHistoryScope('all')}
-                  className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${historyScope === 'all'
+                  className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1 sm:gap-1.5 ${historyScope === 'all'
                     ? 'bg-white text-amber-700 shadow-sm'
                     : 'text-amber-500 hover:text-amber-700'
                     }`}
                 >
-                  <Layers className="w-4 h-4" />
-                  All Devices
+                  <Layers className="w-3 h-3 sm:w-4 sm:h-4" />
+                  All
                 </button>
               </div>
             </div>
 
-            <div className="h-64">
+            <div className="h-48 sm:h-56 md:h-64">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={chartData}>
@@ -575,8 +596,9 @@ export default function DashboardPage() {
                     <XAxis
                       dataKey="time"
                       stroke="#78716c"
-                      fontSize={12}
-                      tick={{ fill: '#57534e' }}
+                      fontSize={10}
+                      tick={{ fill: '#57534e', fontSize: 10 }}
+                      interval="preserveStartEnd"
                     />
                     <YAxis
                       stroke="#78716c"
@@ -605,64 +627,66 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-center justify-center text-stone-400">
-                  <p>No data available</p>
+                  <p className="text-sm">No data available</p>
                 </div>
               )}
             </div>
             {/* Scope Label */}
-            <p className="text-center text-xs text-stone-400 mt-3">
+            <p className="text-center text-[10px] sm:text-xs text-stone-400 mt-2 sm:mt-3">
               {historyScope === 'device' ? 'Selected device only' : 'All feeders combined'}
             </p>
           </div>
         </div>
 
         {/* ========== RECENT EVENTS TABLE ========== */}
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
           {/* Header with scope toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-stone-800 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-stone-500" />
-              Recent Dispense Events
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <h2 className="text-sm sm:text-lg md:text-xl font-bold text-stone-800 flex items-center gap-1.5 sm:gap-2">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-stone-500" />
+              <span className="hidden xs:inline">Recent Dispense Events</span>
+              <span className="xs:hidden">Recent Events</span>
               {eventsLoading && (
-                <span className="w-4 h-4 border-2 border-cyan-300 border-t-cyan-600 rounded-full animate-spin" />
+                <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-cyan-300 border-t-cyan-600 rounded-full animate-spin" />
               )}
             </h2>
             
             {/* Scope Toggle */}
-            <div className="flex bg-cyan-50 rounded-lg p-1">
+            <div className="flex bg-cyan-50 rounded-lg p-0.5 sm:p-1">
               <button
                 onClick={() => setEventsScope('device')}
-                className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${eventsScope === 'device'
+                className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1 sm:gap-1.5 ${eventsScope === 'device'
                   ? 'bg-white text-cyan-700 shadow-sm'
                   : 'text-cyan-500 hover:text-cyan-700'
                   }`}
               >
-                <Scale className="w-4 h-4" />
-                This Device
+                <Scale className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">This Device</span>
+                <span className="xs:hidden">Device</span>
               </button>
               <button
                 onClick={() => setEventsScope('all')}
-                className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${eventsScope === 'all'
+                className={`flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1 sm:gap-1.5 ${eventsScope === 'all'
                   ? 'bg-white text-cyan-700 shadow-sm'
                   : 'text-cyan-500 hover:text-cyan-700'
                   }`}
               >
-                <Layers className="w-4 h-4" />
-                All Devices
+                <Layers className="w-3 h-3 sm:w-4 sm:h-4" />
+                All
               </button>
             </div>
           </div>
 
           {recentEvents.length > 0 ? (
-            <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
-              <table className="w-full min-w-[500px]">
+            <div className="overflow-x-auto -mx-4 sm:-mx-5 md:-mx-6 px-4 sm:px-5 md:px-6">
+              <table className="w-full min-w-[350px] sm:min-w-[500px]">
                 <thead>
-                  <tr className="text-left text-stone-500 text-sm border-b-2 border-stone-200">
-                    <th className="pb-3 font-semibold">Time</th>
-                    {eventsScope === 'all' && <th className="pb-3 font-semibold">Device</th>}
-                    <th className="pb-3 font-semibold">Type</th>
-                    <th className="pb-3 font-semibold">Trigger</th>
-                    <th className="pb-3 font-semibold">Amount</th>
+                  <tr className="text-left text-stone-500 text-xs sm:text-sm border-b-2 border-stone-200">
+                    <th className="pb-2 sm:pb-3 font-semibold">Time</th>
+                    {eventsScope === 'all' && <th className="pb-2 sm:pb-3 font-semibold">Device</th>}
+                    <th className="pb-2 sm:pb-3 font-semibold">Type</th>
+                    <th className="pb-2 sm:pb-3 font-semibold">Trigger</th>
+                    <th className="pb-2 sm:pb-3 font-semibold">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -672,27 +696,27 @@ export default function DashboardPage() {
                       className={`border-b border-stone-100 text-stone-800 ${index % 2 === 0 ? 'bg-white' : 'bg-stone-50'
                         }`}
                     >
-                      <td className="py-3 text-stone-600 text-sm">
-                        {format(new Date(event.created_at), 'MMM d, HH:mm:ss')}
+                      <td className="py-2 sm:py-3 text-stone-600 text-xs sm:text-sm whitespace-nowrap">
+                        {format(new Date(event.created_at), 'MMM d, HH:mm')}
                       </td>
                       {eventsScope === 'all' && (
-                        <td className="py-3">
-                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-600">
+                        <td className="py-2 sm:py-3">
+                          <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-stone-100 text-stone-600 truncate max-w-[80px] inline-block">
                             {devices.find(d => d.device_id === event.device_id)?.name || event.device_id}
                           </span>
                         </td>
                       )}
-                      <td className="py-3">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${event.event_type === 'food'
+                      <td className="py-2 sm:py-3">
+                        <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium ${event.event_type === 'food'
                           ? 'bg-amber-100 text-amber-700'
                           : 'bg-cyan-100 text-cyan-700'
                           }`}>
-                          {event.event_type === 'food' ? <Beef className="w-3 h-3" /> : <Droplets className="w-3 h-3" />}
-                          {event.event_type}
+                          {event.event_type === 'food' ? <Beef className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <Droplets className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
+                          <span className="hidden xs:inline">{event.event_type}</span>
                         </span>
                       </td>
-                      <td className="py-3">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${event.trigger_source === 'remote'
+                      <td className="py-2 sm:py-3">
+                        <span className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium ${event.trigger_source === 'remote'
                           ? 'bg-violet-100 text-violet-700'
                           : event.trigger_source === 'pir'
                             ? 'bg-emerald-100 text-emerald-700'
@@ -701,7 +725,7 @@ export default function DashboardPage() {
                           {event.trigger_source}
                         </span>
                       </td>
-                      <td className="py-3 font-medium">
+                      <td className="py-2 sm:py-3 font-medium text-xs sm:text-sm">
                         {event.amount_dispensed ? `${event.amount_dispensed}g` : '-'}
                       </td>
                     </tr>
@@ -710,12 +734,12 @@ export default function DashboardPage() {
               </table>
             </div>
           ) : (
-            <div className="py-12 text-center">
-              <p className="text-stone-400">No dispense events yet</p>
+            <div className="py-8 sm:py-12 text-center">
+              <p className="text-stone-400 text-sm">No dispense events yet</p>
             </div>
           )}
           {/* Scope Label */}
-          <p className="text-center text-xs text-stone-400 mt-4">
+          <p className="text-center text-[10px] sm:text-xs text-stone-400 mt-3 sm:mt-4">
             {eventsScope === 'device' ? 'Selected device only' : 'All feeders combined'}
           </p>
         </div>

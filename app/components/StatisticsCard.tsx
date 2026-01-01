@@ -47,23 +47,23 @@ export function StatisticsCard({ selectedDeviceId, initialData }: Props) {
     const stats = view === 'daily' ? data?.daily : data?.weekly
 
     return (
-        <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
             {/* Header with Toggles */}
-            <div className="flex flex-col gap-3 mb-5">
+            <div className="flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-5">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg sm:text-xl font-bold text-stone-800 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-violet-600" />
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-stone-800 flex items-center gap-1.5 sm:gap-2">
+                        <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                         Statistics
                         {loading && (
-                            <span className="w-4 h-4 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
+                            <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
                         )}
                     </h2>
 
                     {/* Time Toggle (Daily/Weekly) */}
-                    <div className="flex bg-stone-100 rounded-lg p-1">
+                    <div className="flex bg-stone-100 rounded-lg p-0.5 sm:p-1">
                         <button
                             onClick={() => setView('daily')}
-                            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${view === 'daily'
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${view === 'daily'
                                 ? 'bg-white text-stone-800 shadow-sm'
                                 : 'text-stone-500 hover:text-stone-700'
                                 }`}
@@ -72,7 +72,7 @@ export function StatisticsCard({ selectedDeviceId, initialData }: Props) {
                         </button>
                         <button
                             onClick={() => setView('weekly')}
-                            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${view === 'weekly'
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors ${view === 'weekly'
                                 ? 'bg-white text-stone-800 shadow-sm'
                                 : 'text-stone-500 hover:text-stone-700'
                                 }`}
@@ -83,64 +83,66 @@ export function StatisticsCard({ selectedDeviceId, initialData }: Props) {
                 </div>
 
                 {/* Scope Toggle (This Device / All Devices) */}
-                <div className="flex bg-violet-50 rounded-lg p-1">
+                <div className="flex bg-violet-50 rounded-lg p-0.5 sm:p-1">
                     <button
                         onClick={() => setScope('device')}
-                        className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${scope === 'device'
+                        className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1 sm:gap-1.5 ${scope === 'device'
                             ? 'bg-white text-violet-700 shadow-sm'
                             : 'text-violet-500 hover:text-violet-700'
                             }`}
                     >
-                        <Scale className="w-4 h-4" />
-                        This Device
+                        <Scale className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden xs:inline">This Device</span>
+                        <span className="xs:hidden">Device</span>
                     </button>
                     <button
                         onClick={() => setScope('all')}
-                        className={`flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${scope === 'all'
+                        className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1 sm:gap-1.5 ${scope === 'all'
                             ? 'bg-white text-violet-700 shadow-sm'
                             : 'text-violet-500 hover:text-violet-700'
                             }`}
                     >
-                        <Layers className="w-4 h-4" />
-                        All Devices
+                        <Layers className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden xs:inline">All Devices</span>
+                        <span className="xs:hidden">All</span>
                     </button>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 {/* Food Events */}
-                <div className="text-center p-4 bg-amber-50 rounded-xl">
-                    <div className="w-10 h-10 mx-auto mb-2 bg-amber-100 rounded-full flex items-center justify-center">
-                        <Beef className="w-5 h-5 text-amber-600" />
+                <div className="text-center p-2 sm:p-4 bg-amber-50 rounded-lg sm:rounded-xl">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-1.5 sm:mb-2 bg-amber-100 rounded-full flex items-center justify-center">
+                        <Beef className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
                     </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-stone-800">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-stone-800">
                         {stats?.foodEvents ?? 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-stone-500 mt-1">Food Events</p>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-stone-500 mt-0.5 sm:mt-1 leading-tight">Food Events</p>
                 </div>
 
                 {/* Water Events */}
-                <div className="text-center p-4 bg-cyan-50 rounded-xl">
-                    <div className="w-10 h-10 mx-auto mb-2 bg-cyan-100 rounded-full flex items-center justify-center">
-                        <Droplets className="w-5 h-5 text-cyan-600" />
+                <div className="text-center p-2 sm:p-4 bg-cyan-50 rounded-lg sm:rounded-xl">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-1.5 sm:mb-2 bg-cyan-100 rounded-full flex items-center justify-center">
+                        <Droplets className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
                     </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-stone-800">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-stone-800">
                         {stats?.waterEvents ?? 0}
                     </p>
-                    <p className="text-xs sm:text-sm text-stone-500 mt-1">Water Events</p>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-stone-500 mt-0.5 sm:mt-1 leading-tight">Water Events</p>
                 </div>
 
                 {/* Total Dispensed */}
-                <div className="text-center p-4 bg-emerald-50 rounded-xl">
-                    <div className="w-10 h-10 mx-auto mb-2 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <Scale className="w-5 h-5 text-emerald-600" />
+                <div className="text-center p-2 sm:p-4 bg-emerald-50 rounded-lg sm:rounded-xl">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-1.5 sm:mb-2 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <Scale className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                     </div>
-                    <p className="text-2xl sm:text-3xl font-bold text-stone-800">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-stone-800">
                         {stats?.totalFoodDispensed ?? 0}
-                        <span className="text-base font-normal text-stone-500">g</span>
+                        <span className="text-xs sm:text-base font-normal text-stone-500">g</span>
                     </p>
-                    <p className="text-xs sm:text-sm text-stone-500 mt-1">Food Dispensed</p>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-stone-500 mt-0.5 sm:mt-1 leading-tight">Food Dispensed</p>
                 </div>
             </div>
 

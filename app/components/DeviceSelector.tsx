@@ -39,27 +39,27 @@ export function DeviceSelector({ devices, selectedDeviceId, onSelect }: Props) {
     }
 
     return (
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative flex-shrink-0" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-3 py-2 bg-stone-100 hover:bg-stone-200 rounded-xl text-stone-700 transition-colors min-w-[180px]"
+                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-stone-700 transition-colors min-w-[120px] sm:min-w-[180px] max-w-[160px] sm:max-w-none"
             >
-                <MapPin className="w-4 h-4 text-stone-500" />
-                <span className="flex-1 text-left text-sm font-medium truncate">
+                <MapPin className="w-4 h-4 text-stone-500 flex-shrink-0" />
+                <span className="flex-1 text-left text-xs sm:text-sm font-medium truncate">
                     {selectedDevice?.name || 'Select Device'}
                 </span>
                 {selectedDevice && (
                     selectedDevice.is_online ? (
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                        <span className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0" />
                     ) : (
-                        <span className="w-2 h-2 bg-red-500 rounded-full" />
+                        <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0" />
                     )
                 )}
-                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 w-full min-w-[220px] bg-white rounded-xl shadow-lg border border-stone-200 py-2 z-50">
+                <div className="absolute top-full right-0 sm:left-0 sm:right-auto mt-2 w-[220px] sm:w-full sm:min-w-[220px] bg-white rounded-xl shadow-lg border border-stone-200 py-2 z-50 max-h-[60vh] overflow-y-auto">
                     {devices.map((device) => (
                         <button
                             key={device.device_id}

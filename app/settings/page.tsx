@@ -133,9 +133,9 @@ export default function SettingsPage() {
         <div className="min-h-screen bg-stone-50">
             {/* Header */}
             <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
-                <div className="px-4 sm:px-6 lg:px-8 py-4">
+                <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
                     <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             <Link
                                 href="/dashboard"
                                 className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
@@ -144,11 +144,12 @@ export default function SettingsPage() {
                                 <ArrowLeft className="w-5 h-5 text-stone-600" />
                             </Link>
                             <div>
-                                <h1 className="text-xl sm:text-2xl font-bold text-stone-800 flex items-center gap-2">
-                                    <Settings className="w-6 h-6 text-violet-600" />
-                                    Device Settings
+                                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-stone-800 flex items-center gap-2">
+                                    <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-violet-600" />
+                                    <span className="hidden xs:inline">Device Settings</span>
+                                    <span className="xs:hidden">Settings</span>
                                 </h1>
-                                <p className="text-stone-500 text-sm mt-0.5 hidden sm:block">
+                                <p className="text-stone-500 text-xs sm:text-sm mt-0.5 hidden sm:block">
                                     Manage your feeder devices
                                 </p>
                             </div>
@@ -158,7 +159,7 @@ export default function SettingsPage() {
             </header>
 
             {/* Main Content */}
-            <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-6xl mx-auto">
+            <main className="px-3 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-6xl mx-auto">
                 {/* Error Alert */}
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-700 flex items-center gap-3">
@@ -175,10 +176,10 @@ export default function SettingsPage() {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Device List */}
-                    <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-                        <h2 className="text-lg font-bold text-stone-800 mb-4">Your Devices</h2>
+                    <div className="bg-white rounded-xl p-4 sm:p-6 border border-stone-200 shadow-sm">
+                        <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-3 sm:mb-4">Your Devices</h2>
 
                         {devices.length > 0 ? (
                             <div className="space-y-2">
@@ -219,14 +220,14 @@ export default function SettingsPage() {
                     {/* Device Edit Form */}
                     <div className="lg:col-span-2">
                         {selectedDevice ? (
-                            <div className="bg-white rounded-xl p-6 border border-stone-200 shadow-sm">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center">
-                                        <Edit2 className="w-5 h-5 text-violet-600" />
+                            <div className="bg-white rounded-xl p-4 sm:p-6 border border-stone-200 shadow-sm">
+                                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-violet-100 rounded-lg flex items-center justify-center">
+                                        <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-bold text-stone-800">Edit Device</h2>
-                                        <p className="text-sm text-stone-500">ID: {selectedDevice.device_id}</p>
+                                        <h2 className="text-base sm:text-lg font-bold text-stone-800">Edit Device</h2>
+                                        <p className="text-xs sm:text-sm text-stone-500 truncate max-w-[200px] sm:max-w-none">ID: {selectedDevice.device_id}</p>
                                     </div>
                                 </div>
 
