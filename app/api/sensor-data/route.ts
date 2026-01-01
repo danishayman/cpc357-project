@@ -10,11 +10,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Get device_id from query params (default to first device or esp32-feeder-01)
+  // Get device_id and scope from query params
   const { searchParams } = new URL(request.url)
   const deviceId = searchParams.get('device_id') || 'esp32-feeder-01'
+  const scope = searchParams.get('scope') || 'device' // 'device' or 'all'
 
-  // Get latest sensor reading for this device
+  // Get latest sensor reading for this device (always device-specific for status)
   const { data: latestReading, error: readingError } = await supabase
     .from('sensor_readings')
     .select('*')
@@ -30,22 +31,33 @@ export async function GET(request: NextRequest) {
     .eq('device_id', deviceId)
     .single()
 
-  // Get recent dispense events for this device
-  const { data: recentEvents, error: eventsError } = await supabase
+  // Get recent dispense events - either for this device or all devices
+  let recentEventsQuery = supabase
     .from('dispense_events')
     .select('*')
-    .eq('device_id', deviceId)
     .order('created_at', { ascending: false })
     .limit(10)
+  
+  if (scope === 'device') {
+    recentEventsQuery = recentEventsQuery.eq('device_id', deviceId)
+  }
+  
+  const { data: recentEvents, error: eventsError } = await recentEventsQuery
 
-  // Get sensor history (last 24 hours) for this device
+  // Get sensor history (last 24 hours) - either for this device or all devices
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  const { data: sensorHistory, error: historyError } = await supabase
+  
+  let sensorHistoryQuery = supabase
     .from('sensor_readings')
-    .select('food_weight, water_level_ok, rain_value, is_raining, created_at')
-    .eq('device_id', deviceId)
+    .select('device_id, food_weight, water_level_ok, rain_value, is_raining, created_at')
     .gte('created_at', twentyFourHoursAgo)
     .order('created_at', { ascending: true })
+  
+  if (scope === 'device') {
+    sensorHistoryQuery = sensorHistoryQuery.eq('device_id', deviceId)
+  }
+  
+  const { data: sensorHistory, error: historyError } = await sensorHistoryQuery
 
   if (readingError && readingError.code !== 'PGRST116') {
     console.error('Error fetching sensor reading:', readingError)

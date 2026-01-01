@@ -24,7 +24,8 @@ import {
   Sun,
   Bell,
   Settings,
-  MapPin
+  MapPin,
+  Layers
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
@@ -65,9 +66,51 @@ export default function DashboardPage() {
   const [statistics, setStatistics] = useState<StatisticsResponse | null>(null)
   const [devices, setDevices] = useState<DeviceWithStatus[]>([])
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('esp32-feeder-01')
+  const [historyScope, setHistoryScope] = useState<'device' | 'all'>('device')
+  const [eventsScope, setEventsScope] = useState<'device' | 'all'>('device')
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [eventsLoading, setEventsLoading] = useState(false)
 
   const router = useRouter()
   const supabase = createClient()
+
+  // Fetch history data with scope
+  const fetchHistoryData = useCallback(async (scope: 'device' | 'all') => {
+    setHistoryLoading(true)
+    try {
+      const url = scope === 'all'
+        ? `/api/sensor-data?scope=all`
+        : `/api/sensor-data?device_id=${selectedDeviceId}&scope=device`
+      const response = await fetch(url)
+      if (response.ok) {
+        const data = await response.json()
+        setSensorHistory(data.sensorHistory)
+      }
+    } catch (err) {
+      console.error('Failed to fetch history data:', err)
+    } finally {
+      setHistoryLoading(false)
+    }
+  }, [selectedDeviceId])
+
+  // Fetch events data with scope
+  const fetchEventsData = useCallback(async (scope: 'device' | 'all') => {
+    setEventsLoading(true)
+    try {
+      const url = scope === 'all'
+        ? `/api/sensor-data?scope=all`
+        : `/api/sensor-data?device_id=${selectedDeviceId}&scope=device`
+      const response = await fetch(url)
+      if (response.ok) {
+        const data = await response.json()
+        setRecentEvents(data.recentEvents)
+      }
+    } catch (err) {
+      console.error('Failed to fetch events data:', err)
+    } finally {
+      setEventsLoading(false)
+    }
+  }, [selectedDeviceId])
 
   const fetchData = useCallback(async () => {
     try {
@@ -78,8 +121,8 @@ export default function DashboardPage() {
         setDevices(devicesData.devices || [])
       }
 
-      // Fetch sensor data for selected device
-      const response = await fetch(`/api/sensor-data?device_id=${selectedDeviceId}`)
+      // Fetch sensor data for selected device with current scopes
+      const response = await fetch(`/api/sensor-data?device_id=${selectedDeviceId}&scope=${historyScope}`)
       if (response.status === 401) {
         router.push('/login')
         return
@@ -104,6 +147,20 @@ export default function DashboardPage() {
       setLoading(false)
     }
   }, [router, selectedDeviceId])
+
+  // Effect for history scope changes
+  useEffect(() => {
+    if (!loading) {
+      fetchHistoryData(historyScope)
+    }
+  }, [historyScope, fetchHistoryData, loading])
+
+  // Effect for events scope changes
+  useEffect(() => {
+    if (!loading) {
+      fetchEventsData(eventsScope)
+    }
+  }, [eventsScope, fetchEventsData, loading])
 
   useEffect(() => {
     fetchData()
@@ -470,10 +527,40 @@ export default function DashboardPage() {
         <div className="mb-6 sm:mb-8">
           {/* Food Weight Chart */}
           <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
+            {/* Header with scope toggle */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-stone-800 flex items-center gap-2">
+                📊 Food Weight History (24h)
+                {historyLoading && (
+                  <span className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+                )}
+              </h2>
+              
+              {/* Scope Toggle */}
+              <div className="flex bg-amber-50 rounded-lg p-1">
+                <button
+                  onClick={() => setHistoryScope('device')}
+                  className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${historyScope === 'device'
+                    ? 'bg-white text-amber-700 shadow-sm'
+                    : 'text-amber-500 hover:text-amber-700'
+                    }`}
+                >
+                  <Scale className="w-4 h-4" />
+                  This Device
+                </button>
+                <button
+                  onClick={() => setHistoryScope('all')}
+                  className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${historyScope === 'all'
+                    ? 'bg-white text-amber-700 shadow-sm'
+                    : 'text-amber-500 hover:text-amber-700'
+                    }`}
+                >
+                  <Layers className="w-4 h-4" />
+                  All Devices
+                </button>
+              </div>
+            </div>
 
-            <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4">
-              📊 Food Weight History (24h)
-            </h2>
             <div className="h-64">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -522,15 +609,49 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+            {/* Scope Label */}
+            <p className="text-center text-xs text-stone-400 mt-3">
+              {historyScope === 'device' ? 'Selected device only' : 'All feeders combined'}
+            </p>
           </div>
         </div>
 
         {/* ========== RECENT EVENTS TABLE ========== */}
         <div className="bg-white rounded-xl p-5 sm:p-6 border border-stone-200 shadow-sm">
-          <h2 className="text-lg sm:text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-stone-500" />
-            Recent Dispense Events
-          </h2>
+          {/* Header with scope toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-stone-800 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-stone-500" />
+              Recent Dispense Events
+              {eventsLoading && (
+                <span className="w-4 h-4 border-2 border-cyan-300 border-t-cyan-600 rounded-full animate-spin" />
+              )}
+            </h2>
+            
+            {/* Scope Toggle */}
+            <div className="flex bg-cyan-50 rounded-lg p-1">
+              <button
+                onClick={() => setEventsScope('device')}
+                className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${eventsScope === 'device'
+                  ? 'bg-white text-cyan-700 shadow-sm'
+                  : 'text-cyan-500 hover:text-cyan-700'
+                  }`}
+              >
+                <Scale className="w-4 h-4" />
+                This Device
+              </button>
+              <button
+                onClick={() => setEventsScope('all')}
+                className={`flex-1 sm:flex-none px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-1.5 ${eventsScope === 'all'
+                  ? 'bg-white text-cyan-700 shadow-sm'
+                  : 'text-cyan-500 hover:text-cyan-700'
+                  }`}
+              >
+                <Layers className="w-4 h-4" />
+                All Devices
+              </button>
+            </div>
+          </div>
 
           {recentEvents.length > 0 ? (
             <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
@@ -538,6 +659,7 @@ export default function DashboardPage() {
                 <thead>
                   <tr className="text-left text-stone-500 text-sm border-b-2 border-stone-200">
                     <th className="pb-3 font-semibold">Time</th>
+                    {eventsScope === 'all' && <th className="pb-3 font-semibold">Device</th>}
                     <th className="pb-3 font-semibold">Type</th>
                     <th className="pb-3 font-semibold">Trigger</th>
                     <th className="pb-3 font-semibold">Amount</th>
@@ -553,6 +675,13 @@ export default function DashboardPage() {
                       <td className="py-3 text-stone-600 text-sm">
                         {format(new Date(event.created_at), 'MMM d, HH:mm:ss')}
                       </td>
+                      {eventsScope === 'all' && (
+                        <td className="py-3">
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-600">
+                            {devices.find(d => d.device_id === event.device_id)?.name || event.device_id}
+                          </span>
+                        </td>
+                      )}
                       <td className="py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${event.event_type === 'food'
                           ? 'bg-amber-100 text-amber-700'
@@ -585,6 +714,10 @@ export default function DashboardPage() {
               <p className="text-stone-400">No dispense events yet</p>
             </div>
           )}
+          {/* Scope Label */}
+          <p className="text-center text-xs text-stone-400 mt-4">
+            {eventsScope === 'device' ? 'Selected device only' : 'All feeders combined'}
+          </p>
         </div>
       </main>
     </div>
