@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { DashboardSkeleton } from '@/app/components/Skeleton'
 import { StatisticsCard } from '@/app/components/StatisticsCard'
 import { ActivityHeatmap } from '@/app/components/ActivityHeatmap'
@@ -18,7 +19,8 @@ import {
   Scale,
   Clock,
   AlertTriangle,
-  Sun
+  Sun,
+  Bell
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
@@ -206,6 +208,14 @@ export default function DashboardPage() {
               >
                 <RefreshCw className="w-5 h-5" />
               </button>
+              <Link
+                href="/notifications"
+                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-violet-100 active:bg-violet-200 hover:text-violet-700 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                title="Notifications"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+              </Link>
               <button
                 onClick={handleLogout}
                 className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-red-100 active:bg-red-200 hover:text-red-700 rounded-xl text-stone-700 transition-colors flex items-center justify-center"

@@ -65,3 +65,31 @@ export type StatisticsResponse = {
   weekly: StatisticsSummary
   heatmapData: HeatmapCell[]
 }
+
+export type NotificationSettings = {
+  id: string
+  user_id: string
+  email: string
+  email_enabled: boolean
+  food_low_threshold: number
+  water_low_enabled: boolean
+  device_offline_enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type AlertHistory = {
+  id: string
+  user_id: string
+  alert_type: 'food_low' | 'water_low' | 'device_offline'
+  message: string
+  sent_at: string
+  email_sent: boolean
+}
+
+export type NotificationRecipient = {
+  id: string
+  user_id: string
+  email: string
+  created_at: string
+}
