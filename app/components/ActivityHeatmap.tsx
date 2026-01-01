@@ -52,46 +52,43 @@ export function ActivityHeatmap({ data }: Props) {
                 </span>
             </div>
 
-            {/* Heatmap Container - Horizontal scroll on mobile */}
-            <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
-                <div className="min-w-[600px]">
-                    {/* Hour Labels */}
-                    <div className="flex mb-1 ml-10">
-                        {HOURS.filter((_, i) => i % 3 === 0).map(hour => (
-                            <div
-                                key={hour}
-                                className="text-xs text-stone-400 font-medium"
-                                style={{ width: `${(100 / 8)}%` }}
-                            >
-                                {formatHour(hour)}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Grid */}
-                    {DAYS.map((dayLabel, dayIndex) => (
-                        <div key={dayLabel} className="flex items-center mb-1">
-                            {/* Day Label */}
-                            <div className="w-10 text-xs text-stone-500 font-medium">
-                                {dayLabel}
-                            </div>
-
-                            {/* Hour Cells */}
-                            <div className="flex-1 flex gap-0.5">
-                                {HOURS.map(hour => {
-                                    const count = getCell(dayIndex, hour)
-                                    return (
-                                        <div
-                                            key={hour}
-                                            className={`flex-1 h-6 rounded-sm transition-colors ${getColor(count)}`}
-                                            title={`${dayLabel} ${formatHour(hour)}: ${count} visits`}
-                                        />
-                                    )
-                                })}
-                            </div>
+            {/* Heatmap Container */}
+            <div className="w-full">
+                {/* Hour Labels */}
+                <div className="flex mb-1 ml-8 sm:ml-10">
+                    {HOURS.filter((_, i) => i % 3 === 0).map(hour => (
+                        <div
+                            key={hour}
+                            className="flex-1 text-[10px] sm:text-xs text-stone-400 font-medium"
+                        >
+                            {formatHour(hour)}
                         </div>
                     ))}
                 </div>
+
+                {/* Grid */}
+                {DAYS.map((dayLabel, dayIndex) => (
+                    <div key={dayLabel} className="flex items-center mb-0.5 sm:mb-1">
+                        {/* Day Label */}
+                        <div className="w-8 sm:w-10 text-[10px] sm:text-xs text-stone-500 font-medium shrink-0">
+                            {dayLabel}
+                        </div>
+
+                        {/* Hour Cells */}
+                        <div className="flex-1 grid grid-cols-24 gap-[1px] sm:gap-0.5">
+                            {HOURS.map(hour => {
+                                const count = getCell(dayIndex, hour)
+                                return (
+                                    <div
+                                        key={hour}
+                                        className={`aspect-square sm:aspect-auto sm:h-6 rounded-[2px] sm:rounded-sm transition-colors ${getColor(count)}`}
+                                        title={`${dayLabel} ${formatHour(hour)}: ${count} visits`}
+                                    />
+                                )
+                            })}
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Legend */}
