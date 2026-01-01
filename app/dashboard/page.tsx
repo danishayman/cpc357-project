@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { DashboardSkeleton } from '@/app/components/Skeleton'
 import { StatisticsCard } from '@/app/components/StatisticsCard'
 import { ActivityHeatmap } from '@/app/components/ActivityHeatmap'
+import { DeviceSelector } from '@/app/components/DeviceSelector'
+import { MapView } from '@/app/components/MapView'
 import {
   Droplets,
   Beef,
@@ -20,7 +22,8 @@ import {
   Clock,
   AlertTriangle,
   Sun,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import {
@@ -34,7 +37,9 @@ import {
   AreaChart,
   Area
 } from 'recharts'
-import type { SensorReading, DispenseEvent, DeviceStatus, StatisticsResponse } from '@/lib/types/database'
+import type { SensorReading, DispenseEvent, DeviceStatus, StatisticsResponse, Device } from '@/lib/types/database'
+
+type DeviceWithStatus = Device & { is_online: boolean; last_seen: string | null }
 
 /**
  * Dashboard Page - Outdoor Daylight Theme
@@ -57,13 +62,23 @@ export default function DashboardPage() {
   const [commandLoading, setCommandLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [statistics, setStatistics] = useState<StatisticsResponse | null>(null)
+  const [devices, setDevices] = useState<DeviceWithStatus[]>([])
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('esp32-feeder-01')
 
   const router = useRouter()
   const supabase = createClient()
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await fetch('/api/sensor-data')
+      // Fetch devices list
+      const devicesResponse = await fetch('/api/devices')
+      if (devicesResponse.ok) {
+        const devicesData = await devicesResponse.json()
+        setDevices(devicesData.devices || [])
+      }
+
+      // Fetch sensor data for selected device
+      const response = await fetch(`/api/sensor-data?device_id=${selectedDeviceId}`)
       if (response.status === 401) {
         router.push('/login')
         return
@@ -75,8 +90,8 @@ export default function DashboardPage() {
       setSensorHistory(data.sensorHistory)
       setError(null)
 
-      // Fetch statistics data
-      const statsResponse = await fetch('/api/statistics')
+      // Fetch statistics data for selected device
+      const statsResponse = await fetch(`/api/statistics?device_id=${selectedDeviceId}`)
       if (statsResponse.ok) {
         const statsData = await statsResponse.json()
         setStatistics(statsData)
@@ -87,7 +102,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [router, selectedDeviceId])
 
   useEffect(() => {
     fetchData()
@@ -200,6 +215,14 @@ export default function DashboardPage() {
 
             {/* Action Buttons - Touch-friendly */}
             <div className="flex items-center gap-2 sm:gap-3">
+              <DeviceSelector
+                devices={devices}
+                selectedDeviceId={selectedDeviceId}
+                onSelect={(id) => {
+                  setSelectedDeviceId(id)
+                  setLoading(true)
+                }}
+              />
               <button
                 onClick={fetchData}
                 className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
@@ -215,6 +238,14 @@ export default function DashboardPage() {
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/settings"
+                className="p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors flex items-center justify-center"
+                title="Settings"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5" />
               </Link>
               <button
                 onClick={handleLogout}
@@ -362,6 +393,20 @@ export default function DashboardPage() {
           <StatisticsCard data={statistics} />
           <ActivityHeatmap data={statistics?.heatmapData} />
         </div>
+
+        {/* ========== MAP VIEW ========== */}
+        {devices.length > 0 && (
+          <div className="mb-6 sm:mb-8">
+            <MapView
+              devices={devices}
+              selectedDeviceId={selectedDeviceId}
+              onSelect={(id) => {
+                setSelectedDeviceId(id)
+                setLoading(true)
+              }}
+            />
+          </div>
+        )}
 
         {/* ========== CONTROL BUTTONS & CHART ROW ========== */}
         {/* Responsive: Stack on mobile, side-by-side on larger screens */}

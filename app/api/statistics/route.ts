@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import type { StatisticsSummary, HeatmapCell } from '@/lib/types/database'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     const supabase = await createClient()
 
     // Check authentication
@@ -11,26 +11,33 @@ export async function GET() {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get device_id from query params
+    const { searchParams } = new URL(request.url)
+    const deviceId = searchParams.get('device_id') || 'esp32-feeder-01'
+
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
     const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7).toISOString()
 
-    // Get daily dispense statistics
+    // Get daily dispense statistics for this device
     const { data: dailyEvents } = await supabase
         .from('dispense_events')
         .select('event_type, amount_dispensed')
+        .eq('device_id', deviceId)
         .gte('created_at', todayStart)
 
-    // Get weekly dispense statistics
+    // Get weekly dispense statistics for this device
     const { data: weeklyEvents } = await supabase
         .from('dispense_events')
         .select('event_type, amount_dispensed')
+        .eq('device_id', deviceId)
         .gte('created_at', weekStart)
 
-    // Get PIR activity for heatmap (last 7 days)
+    // Get PIR activity for heatmap (last 7 days) for this device
     const { data: pirReadings } = await supabase
         .from('sensor_readings')
         .select('food_pir_triggered, water_pir_triggered, created_at')
+        .eq('device_id', deviceId)
         .gte('created_at', weekStart)
 
     // Calculate daily summary

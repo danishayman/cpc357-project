@@ -93,3 +93,12 @@ export type NotificationRecipient = {
   email: string
   created_at: string
 }
+
+export type Device = {
+  device_id: string
+  name: string
+  location_name: string | null
+  latitude: number | null
+  longitude: number | null
+  created_at: string
+}
