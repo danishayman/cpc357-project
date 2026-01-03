@@ -59,7 +59,7 @@ export function DeviceSelector({ devices, selectedDeviceId, onSelect }: Props) {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full right-0 sm:left-0 sm:right-auto mt-2 w-[220px] sm:w-full sm:min-w-[220px] bg-white rounded-xl shadow-lg border border-stone-200 py-2 z-50 max-h-[60vh] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-2 w-[220px] sm:w-full sm:min-w-[220px] bg-white rounded-xl shadow-lg border border-stone-200 py-2 z-[100] max-h-[60vh] overflow-y-auto">
                     {devices.map((device) => (
                         <button
                             key={device.device_id}
