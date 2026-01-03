@@ -70,101 +70,138 @@ export default function DashboardPage() {
   const [eventsScope, setEventsScope] = useState<'device' | 'all'>('device')
   const [historyLoading, setHistoryLoading] = useState(false)
   const [eventsLoading, setEventsLoading] = useState(false)
+  const [deviceSwitching, setDeviceSwitching] = useState(false)
 
   const router = useRouter()
   const { supabase } = useAuth()
 
-  // Fetch history data with scope
-  const fetchHistoryData = useCallback(async (scope: 'device' | 'all') => {
-    setHistoryLoading(true)
-    try {
-      const url = scope === 'all'
-        ? `/api/sensor-data?scope=all`
-        : `/api/sensor-data?device_id=${selectedDeviceId}&scope=device`
-      const response = await fetch(url)
-      if (response.ok) {
-        const data = await response.json()
-        setSensorHistory(data.sensorHistory)
-      }
-    } catch (err) {
-      console.error('Failed to fetch history data:', err)
-    } finally {
-      setHistoryLoading(false)
+  // Fetch scoped data (history/events) - single API call for both
+  const fetchScopedData = useCallback(async (hScope: 'device' | 'all', eScope: 'device' | 'all') => {
+    // Determine which scopes we need to fetch
+    const needsAllScope = hScope === 'all' || eScope === 'all'
+    const needsDeviceScope = hScope === 'device' || eScope === 'device'
+    
+    const fetches: Promise<{ scope: string; data: { sensorHistory: SensorReading[]; recentEvents: DispenseEvent[] } } | null>[] = []
+    
+    if (needsAllScope) {
+      fetches.push(
+        fetch(`/api/sensor-data?scope=all`)
+          .then(r => r.ok ? r.json().then(data => ({ scope: 'all', data })) : null)
+          .catch(() => null)
+      )
+    }
+    if (needsDeviceScope) {
+      fetches.push(
+        fetch(`/api/sensor-data?device_id=${selectedDeviceId}&scope=device`)
+          .then(r => r.ok ? r.json().then(data => ({ scope: 'device', data })) : null)
+          .catch(() => null)
+      )
+    }
+    
+    const results = await Promise.all(fetches)
+    const allData = results.find(r => r?.scope === 'all')?.data
+    const deviceData = results.find(r => r?.scope === 'device')?.data
+    
+    // Update history based on its scope
+    if (hScope === 'all' && allData) {
+      setSensorHistory(allData.sensorHistory)
+    } else if (hScope === 'device' && deviceData) {
+      setSensorHistory(deviceData.sensorHistory)
+    }
+    
+    // Update events based on its scope
+    if (eScope === 'all' && allData) {
+      setRecentEvents(allData.recentEvents)
+    } else if (eScope === 'device' && deviceData) {
+      setRecentEvents(deviceData.recentEvents)
     }
   }, [selectedDeviceId])
 
-  // Fetch events data with scope
-  const fetchEventsData = useCallback(async (scope: 'device' | 'all') => {
-    setEventsLoading(true)
+  // Fetch devices list - only once on mount
+  const fetchDevices = useCallback(async () => {
     try {
-      const url = scope === 'all'
-        ? `/api/sensor-data?scope=all`
-        : `/api/sensor-data?device_id=${selectedDeviceId}&scope=device`
-      const response = await fetch(url)
-      if (response.ok) {
-        const data = await response.json()
-        setRecentEvents(data.recentEvents)
-      }
-    } catch (err) {
-      console.error('Failed to fetch events data:', err)
-    } finally {
-      setEventsLoading(false)
-    }
-  }, [selectedDeviceId])
-
-  const fetchData = useCallback(async () => {
-    try {
-      // Fetch devices list
       const devicesResponse = await fetch('/api/devices')
       if (devicesResponse.ok) {
         const devicesData = await devicesResponse.json()
         setDevices(devicesData.devices || [])
       }
+    } catch (err) {
+      console.error('Failed to fetch devices:', err)
+    }
+  }, [])
 
-      // Fetch sensor data for selected device with current scopes
-      const response = await fetch(`/api/sensor-data?device_id=${selectedDeviceId}&scope=${historyScope}`)
-      if (response.status === 401) {
+  // Fetch device-specific data (sensor data + statistics) in parallel
+  const fetchDeviceData = useCallback(async (showFullLoading = false) => {
+    if (showFullLoading) {
+      setLoading(true)
+    } else {
+      setDeviceSwitching(true)
+    }
+    
+    try {
+      // Fetch sensor data and statistics in PARALLEL
+      const [sensorResponse, statsResponse] = await Promise.all([
+        fetch(`/api/sensor-data?device_id=${selectedDeviceId}&scope=${historyScope}`),
+        fetch(`/api/statistics?device_id=${selectedDeviceId}`)
+      ])
+
+      if (sensorResponse.status === 401) {
         router.push('/login')
         return
       }
-      const data = await response.json()
-      setLatestReading(data.latestReading)
-      setDeviceStatus(data.deviceStatus)
-      setRecentEvents(data.recentEvents)
-      setSensorHistory(data.sensorHistory)
-      setError(null)
 
-      // Fetch statistics data for selected device
-      const statsResponse = await fetch(`/api/statistics?device_id=${selectedDeviceId}`)
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json()
-        setStatistics(statsData)
-      }
+      const [sensorData, statsData] = await Promise.all([
+        sensorResponse.json(),
+        statsResponse.ok ? statsResponse.json() : null
+      ])
+
+      setLatestReading(sensorData.latestReading)
+      setDeviceStatus(sensorData.deviceStatus)
+      setRecentEvents(sensorData.recentEvents)
+      setSensorHistory(sensorData.sensorHistory)
+      if (statsData) setStatistics(statsData)
+      setError(null)
     } catch (err) {
       setError('Failed to fetch data')
       console.error(err)
     } finally {
       setLoading(false)
+      setDeviceSwitching(false)
     }
-  }, [router, selectedDeviceId])
+  }, [router, selectedDeviceId, historyScope])
 
-  // Effect for history scope changes
+  // Effect for scope changes - fetch only when scope changes (not on mount)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
+  
   useEffect(() => {
-    if (!loading) {
-      fetchHistoryData(historyScope)
+    if (initialLoadDone) {
+      setHistoryLoading(true)
+      setEventsLoading(true)
+      fetchScopedData(historyScope, eventsScope).finally(() => {
+        setHistoryLoading(false)
+        setEventsLoading(false)
+      })
     }
-  }, [historyScope, fetchHistoryData, loading])
+  }, [historyScope, eventsScope, fetchScopedData, initialLoadDone])
 
-  // Effect for events scope changes
+  // Initial mount: fetch devices once, then device data
   useEffect(() => {
-    if (!loading) {
-      fetchEventsData(eventsScope)
+    const init = async () => {
+      await fetchDevices()
+      await fetchDeviceData(true)
+      setInitialLoadDone(true)
     }
-  }, [eventsScope, fetchEventsData, loading])
+    init()
+  }, []) // Only run on mount
+
+  // When selected device changes, fetch new device data
+  useEffect(() => {
+    if (initialLoadDone) {
+      fetchDeviceData(false)
+    }
+  }, [selectedDeviceId]) // Only when device changes after initial load
 
   useEffect(() => {
-    fetchData()
-
     // Set up realtime subscriptions
     const sensorChannel = supabase
       .channel('sensor-updates')
@@ -195,7 +232,7 @@ export default function DashboardPage() {
     return () => {
       supabase.removeChannel(sensorChannel)
     }
-  }, [fetchData, supabase])
+  }, [supabase])
 
   const sendCommand = async (command: 'dispense_food' | 'dispense_water') => {
     setCommandLoading(command)
@@ -273,12 +310,12 @@ export default function DashboardPage() {
               {/* Mobile-only quick actions */}
               <div className="flex items-center gap-1 sm:hidden">
                 <button
-                  onClick={fetchData}
+                  onClick={() => fetchDeviceData(false)}
                   className="p-2.5 min-w-[44px] min-h-[44px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-lg text-stone-700 transition-colors flex items-center justify-center"
                   title="Refresh data"
                   aria-label="Refresh data"
                 >
-                  <RefreshCw className="w-5 h-5" />
+                  <RefreshCw className={`w-5 h-5 ${deviceSwitching ? 'animate-spin' : ''}`} />
                 </button>
                 <button
                   onClick={handleLogout}
@@ -296,18 +333,16 @@ export default function DashboardPage() {
               <DeviceSelector
                 devices={devices}
                 selectedDeviceId={selectedDeviceId}
-                onSelect={(id) => {
-                  setSelectedDeviceId(id)
-                  setLoading(true)
-                }}
+                onSelect={setSelectedDeviceId}
+                isLoading={deviceSwitching}
               />
               <button
-                onClick={fetchData}
+                onClick={() => fetchDeviceData(false)}
                 className="hidden sm:flex p-3 min-w-[48px] min-h-[48px] bg-stone-100 hover:bg-stone-200 active:bg-stone-300 rounded-xl text-stone-700 transition-colors items-center justify-center"
                 title="Refresh data"
                 aria-label="Refresh data"
               >
-                <RefreshCw className="w-5 h-5" />
+                <RefreshCw className={`w-5 h-5 ${deviceSwitching ? 'animate-spin' : ''}`} />
               </button>
               <Link
                 href="/notifications"

@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, MapPin, Wifi, WifiOff } from 'lucide-react'
+import { ChevronDown, Loader2, MapPin, Wifi, WifiOff } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import type { Device } from '@/lib/types/database'
 
@@ -13,9 +13,10 @@ type Props = {
     devices: DeviceWithStatus[]
     selectedDeviceId: string
     onSelect: (deviceId: string) => void
+    isLoading?: boolean
 }
 
-export function DeviceSelector({ devices, selectedDeviceId, onSelect }: Props) {
+export function DeviceSelector({ devices, selectedDeviceId, onSelect, isLoading }: Props) {
     const [isOpen, setIsOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -42,9 +43,14 @@ export function DeviceSelector({ devices, selectedDeviceId, onSelect }: Props) {
         <div className="relative flex-shrink-0" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-stone-700 transition-colors min-w-[120px] sm:min-w-[180px] max-w-[160px] sm:max-w-none"
+                disabled={isLoading}
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 bg-stone-100 hover:bg-stone-200 rounded-lg sm:rounded-xl text-stone-700 transition-colors min-w-[120px] sm:min-w-[180px] max-w-[160px] sm:max-w-none ${isLoading ? 'opacity-70' : ''}`}
             >
-                <MapPin className="w-4 h-4 text-stone-500 flex-shrink-0" />
+                {isLoading ? (
+                    <Loader2 className="w-4 h-4 text-stone-500 flex-shrink-0 animate-spin" />
+                ) : (
+                    <MapPin className="w-4 h-4 text-stone-500 flex-shrink-0" />
+                )}
                 <span className="flex-1 text-left text-xs sm:text-sm font-medium truncate">
                     {selectedDevice?.name || 'Select Device'}
                 </span>
