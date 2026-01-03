@@ -27,7 +27,7 @@ export function useAuth() {
       }
 
       // Handle signed out or expired sessions
-      if (event === 'SIGNED_OUT' || (!session && event === 'USER_DELETED')) {
+      if (event === 'SIGNED_OUT' || !session) {
         router.push('/login')
       }
 
