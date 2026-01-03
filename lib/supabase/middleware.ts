@@ -27,10 +27,16 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired
+  // Refresh session if expired - this automatically refreshes the token
   const {
     data: { user },
+    error
   } = await supabase.auth.getUser()
+
+  // If there's an auth error, clear the session
+  if (error) {
+    await supabase.auth.signOut()
+  }
 
   // Protected routes - redirect to login if not authenticated
   const protectedPaths = ['/dashboard', '/api/commands']

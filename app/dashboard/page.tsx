@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/hooks/useAuth'
 import Link from 'next/link'
 import { DashboardSkeleton } from '@/app/components/Skeleton'
 import { StatisticsCard } from '@/app/components/StatisticsCard'
@@ -72,7 +72,7 @@ export default function DashboardPage() {
   const [eventsLoading, setEventsLoading] = useState(false)
 
   const router = useRouter()
-  const supabase = createClient()
+  const { supabase } = useAuth()
 
   // Fetch history data with scope
   const fetchHistoryData = useCallback(async (scope: 'device' | 'all') => {
