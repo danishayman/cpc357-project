@@ -109,7 +109,7 @@ export function MapView({ devices, selectedDeviceId, onSelect }: Props) {
     }
 
     return (
-        <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm">
+        <div className="bg-white rounded-xl p-4 sm:p-5 md:p-6 border border-stone-200 shadow-sm relative z-0">
             <h2 className="text-base sm:text-lg font-bold text-stone-800 mb-2 flex items-center gap-2">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
                 Device Locations
