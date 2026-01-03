@@ -258,9 +258,9 @@ export default function DashboardPage() {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+    await supabase.auth.signOut({ scope: 'global' })
     router.refresh()
+    router.push('/login')
   }
 
   // Loading State - Skeleton UI
