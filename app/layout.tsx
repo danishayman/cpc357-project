@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -18,12 +18,13 @@ export const metadata: Metadata = {
   title: "Smart Feeder Dashboard",
   description: "Monitor and control your outdoor stray animal feeder remotely. Track food levels, water status, and feeding events in real-time.",
   keywords: ["IoT", "smart feeder", "animal care", "stray animals", "remote monitoring"],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: "#fafaf9",
 };
 
