@@ -256,7 +256,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       {/* ========== HEADER ========== */}
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
+      <header className="bg-white border-b border-stone-200 sticky top-0 z-40">
         <div className="px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
           {/* Mobile: Stack title and actions vertically */}
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
@@ -292,7 +292,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Action Buttons - Touch-friendly */}
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1 sm:pb-0 -mx-1 px-1 sm:mx-0 sm:px-0">
+            <div className="flex items-center gap-2 sm:gap-3 pb-1 sm:pb-0">
               <DeviceSelector
                 devices={devices}
                 selectedDeviceId={selectedDeviceId}
