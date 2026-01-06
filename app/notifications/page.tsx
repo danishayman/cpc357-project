@@ -16,7 +16,8 @@ import {
     CheckCircle,
     AlertTriangle,
     Plus,
-    X
+    X,
+    Send
 } from 'lucide-react'
 import { format } from 'date-fns'
 import type { NotificationSettings, AlertHistory, NotificationRecipient } from '@/lib/types/database'
@@ -30,6 +31,8 @@ export default function NotificationsPage() {
     const [recipients, setRecipients] = useState<NotificationRecipient[]>([])
     const [newEmail, setNewEmail] = useState('')
     const [addingEmail, setAddingEmail] = useState(false)
+    const [sendingTest, setSendingTest] = useState(false)
+    const [testSuccess, setTestSuccess] = useState(false)
 
     const [settings, setSettings] = useState<Partial<NotificationSettings>>({
         email_enabled: true,
@@ -126,6 +129,56 @@ export default function NotificationsPage() {
         } catch (err) {
             setError('Failed to remove email')
             console.error(err)
+        }
+    }
+
+    const handleSendTest = async (alertType: 'food_low' | 'device_offline') => {
+        if (recipients.length === 0) {
+            setError('Please add at least one email recipient first')
+            return
+        }
+
+        setSendingTest(true)
+        setTestSuccess(false)
+        setError(null)
+
+        try {
+            const details = alertType === 'food_low' 
+                ? {
+                    currentValue: 150,
+                    threshold: settings.food_low_threshold || 200,
+                  }
+                : {
+                    deviceId: 'esp32-feeder-01',
+                  }
+
+            const res = await fetch('/api/notifications/send-alert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    alertType,
+                    details,
+                }),
+            })
+
+            if (!res.ok) {
+                throw new Error('Failed to send test email')
+            }
+
+            const data = await res.json()
+            if (data.sent > 0) {
+                setTestSuccess(true)
+                setTimeout(() => setTestSuccess(false), 5000)
+                // Refresh alert history
+                fetchData()
+            } else {
+                setError('No emails were sent')
+            }
+        } catch (err) {
+            setError('Failed to send test email')
+            console.error(err)
+        } finally {
+            setSendingTest(false)
         }
     }
 
@@ -297,6 +350,55 @@ export default function NotificationsPage() {
                                 No email recipients added yet
                             </p>
                         )}
+                    </div>
+
+                    {/* Test Email Button */}
+                    <div className="mb-6 pb-6 border-b border-stone-200">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button
+                                onClick={() => handleSendTest('food_low')}
+                                disabled={sendingTest || recipients.length === 0}
+                                className="py-3 px-4 bg-amber-600 hover:bg-amber-700 disabled:bg-stone-300 disabled:text-stone-500 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                            >
+                                {sendingTest ? (
+                                    <>
+                                        <RefreshCw className="w-5 h-5 animate-spin" />
+                                        <span className="hidden sm:inline">Sending...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Scale className="w-5 h-5" />
+                                        Test Food Alert
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => handleSendTest('device_offline')}
+                                disabled={sendingTest || recipients.length === 0}
+                                className="py-3 px-4 bg-red-600 hover:bg-red-700 disabled:bg-stone-300 disabled:text-stone-500 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                            >
+                                {sendingTest ? (
+                                    <>
+                                        <RefreshCw className="w-5 h-5 animate-spin" />
+                                        <span className="hidden sm:inline">Sending...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <WifiOff className="w-5 h-5" />
+                                        Test Offline Alert
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                        {testSuccess && (
+                            <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm flex items-center gap-2">
+                                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                                <span>Test email sent successfully! Check your inbox.</span>
+                            </div>
+                        )}
+                        <p className="text-xs text-stone-500 mt-2 text-center">
+                            Send test alert emails to all recipients
+                        </p>
                     </div>
 
                     {/* Master Toggle */}
