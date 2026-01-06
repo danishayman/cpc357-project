@@ -80,7 +80,7 @@ const char* FIRMWARE_VERSION = "1.0.0";
 
 // --- CONFIGURATION CONSTANTS ---
 // Servo Angles
-const int SERVO_OPEN_ANGLE = 90;       // Angle to release food/water
+const int SERVO_OPEN_ANGLE = 180;       // Angle to release food/water
 const int SERVO_CLOSE_ANGLE = 0;       // Angle to stop dispensing
 
 // Timing
