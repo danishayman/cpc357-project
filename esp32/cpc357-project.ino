@@ -43,7 +43,7 @@ const char* DEVICE_ID = "esp32-feeder-01";
 // ============================================
 // TODO: Replace with your GCP VM's EXTERNAL IP address
 // Find it in GCP Console > Compute Engine > VM instances > External IP column
-const char* MQTT_SERVER = "34.87.168.186";  // e.g., "34.123.45.67" 136.110.63.138
+const char* MQTT_SERVER = "34.143.176.205";  // e.g., "34.123.45.67" 136.110.63.138
 const int MQTT_PORT = 1883;                            // Standard MQTT port
 
 // TODO: Replace with the credentials you created with mosquitto_passwd
@@ -71,7 +71,7 @@ const char* FIRMWARE_VERSION = "1.0.0";
 #define PIN_SERVO_FOOD      38  // Servo for food dispenser
 #define PIN_SERVO_WATER     39  // Servo for water dispenser
 #define PIN_RAIN_ANALOG     5   // MH-RD rain sensor analog (A3)
-#define PIN_WATER_LEVEL     18  // Float switch (LOW=full, HIGH=empty)
+#define PIN_WATER_LEVEL     18  // Float switch (HIGH=full, LOW=empty)
 #define PIN_SCALE_DT        16  // HX711 data pin
 #define PIN_SCALE_SCK       15  // HX711 clock pin
 #define PIN_BUTTON_FOOD     4  // Manual food dispense button
@@ -80,7 +80,7 @@ const char* FIRMWARE_VERSION = "1.0.0";
 
 // --- CONFIGURATION CONSTANTS ---
 // Servo Angles
-const int SERVO_OPEN_ANGLE = 180;       // Angle to release food/water
+const int SERVO_OPEN_ANGLE = 90;       // Angle to release food/water
 const int SERVO_CLOSE_ANGLE = 0;       // Angle to stop dispensing
 
 // Timing
@@ -418,7 +418,7 @@ void sendTelemetry() {
   if (!mqttConnected) return;
 
   float foodWeight = scale.get_units(3);
-  bool waterLevelOk = BYPASS_WATER_LEVEL_SENSOR ? true : (digitalRead(PIN_WATER_LEVEL) == LOW);
+  bool waterLevelOk = BYPASS_WATER_LEVEL_SENSOR ? true : (digitalRead(PIN_WATER_LEVEL) == HIGH);
   int rainValue = BYPASS_RAIN_SENSOR ? 4095 : analogRead(PIN_RAIN_ANALOG);
 
   // Format matches what the bridge expects for sensor_readings table
@@ -541,7 +541,7 @@ void checkManualButtons() {
       }
       
       // Check water level before dispensing (skip if bypassed for testing)
-      if (!BYPASS_WATER_LEVEL_SENSOR && digitalRead(PIN_WATER_LEVEL) == HIGH) {
+      if (!BYPASS_WATER_LEVEL_SENSOR && digitalRead(PIN_WATER_LEVEL) == LOW) {
         Serial.println("[MANUAL] ! Cannot dispense: Water tank empty !");
         lastWaterButtonState = currentWaterButton;  // Update state to prevent repeated messages
         return;
@@ -658,7 +658,7 @@ void checkWaterDispenser() {
   }
 
   // Check water level first (skip if bypassed for testing)
-  bool waterAvailable = BYPASS_WATER_LEVEL_SENSOR || (digitalRead(PIN_WATER_LEVEL) == LOW);
+  bool waterAvailable = BYPASS_WATER_LEVEL_SENSOR || (digitalRead(PIN_WATER_LEVEL) == HIGH);
   if (!waterAvailable) {
     // Water empty but don't print here - checkWaterLevel() already handles it
     return;
@@ -737,7 +737,7 @@ void checkRainSensor() {
 
 void checkWaterLevel() {
   // Always check current water level status for instant telemetry updates
-  bool waterLevelOk = BYPASS_WATER_LEVEL_SENSOR ? true : (digitalRead(PIN_WATER_LEVEL) == LOW);
+  bool waterLevelOk = BYPASS_WATER_LEVEL_SENSOR ? true : (digitalRead(PIN_WATER_LEVEL) == HIGH);
   
   // Only print and send telemetry when status changes
   if (waterLevelOk != lastWaterLevelOk) {
