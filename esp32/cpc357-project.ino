@@ -88,8 +88,8 @@ const int WATER_SERVO_OPEN_ANGLE = 180;  // Angle to release water
 const int WATER_SERVO_CLOSE_ANGLE = 0;  // Angle to stop dispensing water
 
 // Timing
-const int FOOD_DISPENSE_TIME_MS = 800;    // How long food gate stays open
-const int WATER_DISPENSE_TIME_MS = 1500;  // How long water valve stays open
+const int FOOD_DISPENSE_TIME_MS = 1000;    // How long food gate stays open
+const int WATER_DISPENSE_TIME_MS = 2000;  // How long water valve stays open
 const unsigned long PIR_COOLDOWN_MS = 5000; // 5 second cooldown between triggers
 const unsigned long SETTLE_TIME_MS = 2000;  // Time to wait after servo movement
 
