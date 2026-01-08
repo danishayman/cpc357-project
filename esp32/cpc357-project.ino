@@ -84,7 +84,7 @@ const int FOOD_SERVO_OPEN_ANGLE = 90;   // Angle to release food
 const int FOOD_SERVO_CLOSE_ANGLE = 0;   // Angle to stop dispensing food
 
 // Servo Angles - Water
-const int WATER_SERVO_OPEN_ANGLE = 90;  // Angle to release water
+const int WATER_SERVO_OPEN_ANGLE = 180;  // Angle to release water
 const int WATER_SERVO_CLOSE_ANGLE = 0;  // Angle to stop dispensing water
 
 // Timing
