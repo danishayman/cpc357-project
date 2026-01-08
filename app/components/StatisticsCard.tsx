@@ -139,7 +139,7 @@ export function StatisticsCard({ selectedDeviceId, initialData }: Props) {
                         <Scale className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                     </div>
                     <p className="text-xl sm:text-2xl md:text-3xl font-bold text-stone-800">
-                        {stats?.totalFoodDispensed ?? 0}
+                        {(stats?.totalFoodDispensed ?? 0).toFixed(1)}
                         <span className="text-xs sm:text-base font-normal text-stone-500">g</span>
                     </p>
                     <p className="text-[10px] sm:text-xs md:text-sm text-stone-500 mt-0.5 sm:mt-1 leading-tight">Food Dispensed</p>
