@@ -43,7 +43,7 @@ const char* DEVICE_ID = "esp32-feeder-01";
 // ============================================
 // TODO: Replace with your GCP VM's EXTERNAL IP address
 // Find it in GCP Console > Compute Engine > VM instances > External IP column
-const char* MQTT_SERVER = "34.143.176.205";  // e.g., "34.123.45.67" 136.110.63.138
+const char* MQTT_SERVER = "34.87.172.135";  // e.g., "34.123.45.67" 136.110.63.138
 const int MQTT_PORT = 1883;                            // Standard MQTT port
 
 // TODO: Replace with the credentials you created with mosquitto_passwd
@@ -79,9 +79,13 @@ const char* FIRMWARE_VERSION = "1.0.0";
 #define PIN_PWR_CTRL        11  // Maker Feather 3V3 Regulator Control
 
 // --- CONFIGURATION CONSTANTS ---
-// Servo Angles
-const int SERVO_OPEN_ANGLE = 90;       // Angle to release food/water
-const int SERVO_CLOSE_ANGLE = 0;       // Angle to stop dispensing
+// Servo Angles - Food
+const int FOOD_SERVO_OPEN_ANGLE = 90;   // Angle to release food
+const int FOOD_SERVO_CLOSE_ANGLE = 0;   // Angle to stop dispensing food
+
+// Servo Angles - Water
+const int WATER_SERVO_OPEN_ANGLE = 90;  // Angle to release water
+const int WATER_SERVO_CLOSE_ANGLE = 0;  // Angle to stop dispensing water
 
 // Timing
 const int FOOD_DISPENSE_TIME_MS = 800;    // How long food gate stays open
@@ -173,8 +177,8 @@ void setup() {
   // 7. Initialize Servos
   foodServo.attach(PIN_SERVO_FOOD);
   waterServo.attach(PIN_SERVO_WATER);
-  foodServo.write(SERVO_CLOSE_ANGLE);
-  waterServo.write(SERVO_CLOSE_ANGLE);
+  foodServo.write(FOOD_SERVO_CLOSE_ANGLE);
+  waterServo.write(WATER_SERVO_CLOSE_ANGLE);
   Serial.println("- Servos Initialized");
 
   // 8. Initialize HX711 Scale
@@ -606,11 +610,11 @@ void dispenseFoodWithReport(const char* triggerSource, const char* commandId) {
   }
 
   // 2. Open food gate
-  foodServo.write(SERVO_OPEN_ANGLE);
+  foodServo.write(FOOD_SERVO_OPEN_ANGLE);
   delay(FOOD_DISPENSE_TIME_MS);
   
   // 3. Close food gate
-  foodServo.write(SERVO_CLOSE_ANGLE);
+  foodServo.write(FOOD_SERVO_CLOSE_ANGLE);
   
   // 4. Wait for scale to settle
   Serial.println("[FOOD] Waiting for scale to settle...");
@@ -685,11 +689,11 @@ void dispenseWaterWithReport(const char* triggerSource, const char* commandId) {
   Serial.println("[WATER] Dispensing water...");
   
   // Open water valve
-  waterServo.write(SERVO_OPEN_ANGLE);
+  waterServo.write(WATER_SERVO_OPEN_ANGLE);
   delay(WATER_DISPENSE_TIME_MS);
   
   // Close water valve
-  waterServo.write(SERVO_CLOSE_ANGLE);
+  waterServo.write(WATER_SERVO_CLOSE_ANGLE);
   
   Serial.println("[WATER] >> Water dispensed successfully");
   
