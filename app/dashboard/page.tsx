@@ -80,9 +80,9 @@ export default function DashboardPage() {
     // Determine which scopes we need to fetch
     const needsAllScope = hScope === 'all' || eScope === 'all'
     const needsDeviceScope = hScope === 'device' || eScope === 'device'
-    
+
     const fetches: Promise<{ scope: string; data: { sensorHistory: SensorReading[]; recentEvents: DispenseEvent[] } } | null>[] = []
-    
+
     if (needsAllScope) {
       fetches.push(
         fetch(`/api/sensor-data?scope=all`)
@@ -97,18 +97,18 @@ export default function DashboardPage() {
           .catch(() => null)
       )
     }
-    
+
     const results = await Promise.all(fetches)
     const allData = results.find(r => r?.scope === 'all')?.data
     const deviceData = results.find(r => r?.scope === 'device')?.data
-    
+
     // Update history based on its scope
     if (hScope === 'all' && allData) {
       setSensorHistory(allData.sensorHistory)
     } else if (hScope === 'device' && deviceData) {
       setSensorHistory(deviceData.sensorHistory)
     }
-    
+
     // Update events based on its scope
     if (eScope === 'all' && allData) {
       setRecentEvents(allData.recentEvents)
@@ -137,7 +137,7 @@ export default function DashboardPage() {
     } else {
       setDeviceSwitching(true)
     }
-    
+
     try {
       // Fetch sensor data and statistics in PARALLEL
       const [sensorResponse, statsResponse] = await Promise.all([
@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
   // Effect for scope changes - fetch only when scope changes (not on mount)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
-  
+
   useEffect(() => {
     if (initialLoadDone) {
       setHistoryLoading(true)
@@ -590,7 +590,7 @@ export default function DashboardPage() {
                   <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
                 )}
               </h2>
-              
+
               {/* Scope Toggle */}
               <div className="flex bg-amber-50 rounded-lg p-0.5 sm:p-1">
                 <button
@@ -685,7 +685,7 @@ export default function DashboardPage() {
                 <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-cyan-300 border-t-cyan-600 rounded-full animate-spin" />
               )}
             </h2>
-            
+
             {/* Scope Toggle */}
             <div className="flex bg-cyan-50 rounded-lg p-0.5 sm:p-1">
               <button
@@ -736,7 +736,7 @@ export default function DashboardPage() {
                       </td>
                       {eventsScope === 'all' && (
                         <td className="py-2 sm:py-3">
-                          <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-stone-100 text-stone-600 truncate max-w-[80px] inline-block">
+                          <span className="px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-medium bg-stone-100 text-stone-600 whitespace-nowrap">
                             {devices.find(d => d.device_id === event.device_id)?.name || event.device_id}
                           </span>
                         </td>
