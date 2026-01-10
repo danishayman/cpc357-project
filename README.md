@@ -15,6 +15,16 @@
 
 ---
 
+CPC357 - IoT Architecture and Smart Applications
+
+For the attention of Dr. Chong Yung Wey and Dr. Mohd Nadhir Ab Wahab.
+
+Group Members:
+MUHAMMAD DANISH AIMAN BIN MUHAMMAD NAZIR (163371)
+MUHAMMAD HAZIQ BIN SAZALI (163646)
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
